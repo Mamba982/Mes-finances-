@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+/* Thème repris du prototype : vert-bleu profond pour l'action, couleurs sémantiques à part. */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --ink: #16201c;
+  --mute: #56645f;
+  --line: #dce3e0;
+  --accent: #0e6b5c;
+  --accent-ink: #ffffff;
+  --soft: #e9eeec;
+  --ok: #2c7a4b;
+  --warn: #8f5500;
+  --bad: #b3261e;
+  --court: #b0561a;
+  --moyen: #1f5f8b;
+  --long: #5b4a9e;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1513;
+    --surface: #171f1c;
+    --ink: #e7eeeb;
+    --mute: #9aaaa4;
+    --line: #29342f;
+    --accent: #4dbfa7;
+    --accent-ink: #06231d;
+    --soft: #202a26;
+    --ok: #5cc28a;
+    --warn: #e0a24a;
+    --bad: #ef7b72;
+    --court: #e68a4a;
+    --moyen: #6aa8d6;
+    --long: #a796e6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1513;
+  --surface: #171f1c;
+  --ink: #e7eeeb;
+  --mute: #9aaaa4;
+  --line: #29342f;
+  --accent: #4dbfa7;
+  --accent-ink: #06231d;
+  --soft: #202a26;
+  --ok: #5cc28a;
+  --warn: #e0a24a;
+  --bad: #ef7b72;
+  --court: #e68a4a;
+  --moyen: #6aa8d6;
+  --long: #a796e6;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-soft: var(--soft);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-court: var(--court);
+  --color-moyen: var(--moyen);
+  --color-long: var(--long);
+  --font-display: var(--police-titre), system-ui, sans-serif;
+  --font-sans: var(--police-texte), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+body {
+  font: 16px/1.45 var(--font-sans);
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  text-wrap: balance;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .carte {
+    @apply rounded-xl border border-line bg-surface p-3.5;
+  }
+  .btn {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 font-bold text-accent-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-sec {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg bg-soft px-4 py-2.5 font-bold text-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .lien {
+    @apply cursor-pointer font-semibold text-accent underline underline-offset-2;
+  }
+  .champ {
+    @apply w-full rounded-lg border border-line bg-bg px-3 py-2.5 text-[16px] text-ink;
+  }
+  .etiquette {
+    @apply text-sm text-mute;
+  }
+  .note {
+    @apply text-sm text-mute;
+  }
+  .alerte {
+    @apply rounded-lg border-l-4 border-warn bg-soft px-3 py-2.5 text-sm;
+  }
+  .chiffre {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
