@@ -27,7 +27,10 @@ export function FormulaireAffaires() {
     const pct = nombre(txt("frais_carte_pct"));
     const fixe = txt("frais_carte_fixe") ? lireMontant(txt("frais_carte_fixe")) : 0;
     const interac = txt("frais_interac") ? lireMontant(txt("frais_interac")) : 0;
-    if (tps === null || tvq === null || pct === null || fixe === null || interac === null || fixe < 0 || interac < 0) return setMessage(t.invalide);
+    const change = nombre(txt("frais_change_pct"));
+    const abonnement = txt("abonnement_compte_us") ? lireMontant(txt("abonnement_compte_us")) : 0;
+    if (tps === null || tvq === null || pct === null || change === null || fixe === null || interac === null || abonnement === null) return setMessage(t.invalide);
+    if (fixe < 0 || interac < 0 || abonnement < 0) return setMessage(t.invalide);
     setOccupe(true);
     try {
       await modifierProfilAffaires({
@@ -40,6 +43,8 @@ export function FormulaireAffaires() {
         frais_carte_pct: pct,
         frais_carte_fixe: fixe,
         frais_interac: interac,
+        frais_change_pct: change,
+        abonnement_compte_us: abonnement,
       });
       setMessage(t.enregistre);
     } catch {
@@ -71,6 +76,8 @@ export function FormulaireAffaires() {
         {champ("frais_carte_pct", t.fraisCartePct, String(profil?.frais_carte_pct ?? 2.9).replace(".", ","), { inputMode: "decimal" })}
         {champ("frais_carte_fixe", t.fraisCarteFixe, texte(profil?.frais_carte_fixe ?? 25), { inputMode: "decimal" })}
         {champ("frais_interac", t.fraisInterac, texte(profil?.frais_interac ?? 0), { inputMode: "decimal" })}
+        {champ("frais_change_pct", t.fraisChange, String(profil?.frais_change_pct ?? 1.5).replace(".", ","), { inputMode: "decimal" })}
+        {champ("abonnement_compte_us", t.abonnementUs, texte(profil?.abonnement_compte_us ?? 1000), { inputMode: "decimal" })}
       </div>
       <p className="note">{t.noteTaux}</p>
       <p role="status" aria-live="polite" className={message ? "alerte border-accent" : "sr-only"}>

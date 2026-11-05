@@ -6,6 +6,7 @@ import { formaterMontant } from "@/domaine/argent";
 import { bilan } from "@/domaine/budget";
 import { ajouterMois, libelleDate, libelleMois, libelleMoisCourt, moisDe } from "@/domaine/dates";
 import { resumeFactures } from "@/domaine/factures";
+import { patrimoine } from "@/domaine/placements";
 import { projetAAfficher } from "@/domaine/projets";
 import { T } from "@/textes/fr-CA";
 import { useCalculs } from "@/ui/calculs";
@@ -22,7 +23,7 @@ const COULEUR_STATUT = { ok: "text-ok", atteint: "text-ok", retard: "text-warn",
  * L'ordre et les libellés ne changent pas d'une version à l'autre.
  */
 export function TableauAccueil() {
-  const { categories, transactions, factures, index, capacite, repartition: r, radar, aujourdhui, devise } = useCalculs();
+  const { categories, transactions, factures, comptes, index, capacite, repartition: r, radar, aujourdhui, devise } = useCalculs();
   const m0 = (c: number) => formaterMontant(c, 0, devise);
   const m2 = (c: number) => formaterMontant(c, 2, devise);
   const ym = moisDe(aujourdhui);
@@ -171,6 +172,15 @@ export function TableauAccueil() {
           detail={
             <Link href="/affaires" className="lien">
               {a.voirAffaires}
+            </Link>
+          }
+        />
+        <Kpi
+          libelle={a.avoirNet}
+          valeur={m0(patrimoine(comptes).net)}
+          detail={
+            <Link href="/placements" className="lien">
+              {a.voirPlacements}
             </Link>
           }
         />

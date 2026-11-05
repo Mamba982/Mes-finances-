@@ -6,6 +6,7 @@ import { centsVersDecimal, decimalVersCents, type Cents } from "@/domaine/argent
 import type { Categorie, Transaction, TypeCategorie } from "@/domaine/budget";
 import { normaliserMarchand } from "@/domaine/categorisation";
 import { prochainNumero, type Facture, type StatutFacture } from "@/domaine/factures";
+import { TYPES_COMPTE, type Compte, type TypeCompte } from "@/domaine/placements";
 import type { Priorite, Projet } from "@/domaine/projets";
 import { schemaProfil, type Profil } from "./profil";
 import { supabaseNavigateur } from "./supabase-navigateur";
@@ -21,6 +22,7 @@ export interface Donnees {
   transactions: Transaction[];
   projets: Projet[];
   factures: Facture[];
+  comptes: Compte[];
 }
 
 const montant = z.union([z.string(), z.number()]).transform((v) => decimalVersCents(v));
@@ -132,7 +134,7 @@ const schemaProjet = z
 const COLONNES_TX = "id,date,libelle_brut,marchand,montant,categorie_id,deductible,tps,tvq,recu_chemin,facture_id";
 const PAGE = 1000;
 
-let etat: Donnees = { statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [] };
+let etat: Donnees = { statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [], comptes: [] };
 const abonnes = new Set<() => void>();
 const publier = (e: Donnees) => {
   etat = e;
@@ -186,6 +188,16 @@ async function lireFactures(): Promise<Facture[]> {
   return z.array(schemaFacture).parse(data);
 }
 
+const schemaCompte = z
+  .object({ id: z.uuid(), nom: z.string(), type: z.enum(TYPES_COMPTE as [TypeCompte, ...TypeCompte[]]), solde: montant, maj_le: z.string() })
+  .transform((c): Compte => ({ id: c.id, nom: c.nom, type: c.type, solde: c.solde, majLe: c.maj_le }));
+
+async function lireComptes(): Promise<Compte[]> {
+  const { data, error } = await supabaseNavigateur().from("comptes").select("id,nom,type,solde,maj_le").order("nom");
+  if (error) throw error;
+  return z.array(schemaCompte).parse(data);
+}
+
 async function lireProfil(): Promise<Profil> {
   const { data, error } = await supabaseNavigateur().from("profils").select("*").single();
   if (error) throw error;
@@ -195,14 +207,15 @@ async function lireProfil(): Promise<Profil> {
 export async function charger(): Promise<void> {
   if (etat.statut === "vide") publier({ ...etat, statut: "chargement" });
   try {
-    const [profil, categories, transactions, projets, factures] = await Promise.all([
+    const [profil, categories, transactions, projets, factures, comptes] = await Promise.all([
       lireProfil(),
       lireCategories(),
       lireTransactions(),
       lireProjets(),
       lireFactures(),
+      lireComptes(),
     ]);
-    publier({ statut: "pret", profil, categories, transactions, projets, factures });
+    publier({ statut: "pret", profil, categories, transactions, projets, factures, comptes });
   } catch {
     publier({ ...etat, statut: etat.statut === "pret" ? "pret" : "erreur" });
     throw new Error("lecture");
@@ -210,7 +223,7 @@ export async function charger(): Promise<void> {
 }
 
 export function vider(): void {
-  publier({ statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [] });
+  publier({ statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [], comptes: [] });
 }
 
 async function rechargerTransactions() {
@@ -551,6 +564,8 @@ export interface SaisieProfilAffaires {
   frais_carte_pct: number;
   frais_carte_fixe: Cents;
   frais_interac: Cents;
+  frais_change_pct: number;
+  abonnement_compte_us: Cents;
 }
 
 export async function modifierProfilAffaires(s: SaisieProfilAffaires): Promise<void> {
@@ -564,8 +579,30 @@ export async function modifierProfilAffaires(s: SaisieProfilAffaires): Promise<v
         frais_carte_pct: String(s.frais_carte_pct),
         frais_carte_fixe: centsVersDecimal(s.frais_carte_fixe),
         frais_interac: centsVersDecimal(s.frais_interac),
+        frais_change_pct: String(s.frais_change_pct),
+        abonnement_compte_us: centsVersDecimal(s.abonnement_compte_us),
       })
       .not("user_id", "is", null),
   );
   publier({ ...etat, profil: await lireProfil() });
+}
+
+// ---------------------------------------------------------------- comptes
+
+export interface SaisieCompte {
+  nom: string;
+  type: TypeCompte;
+  solde: Cents;
+}
+
+export async function enregistrerCompte(id: string | null, s: SaisieCompte, aujourdhui: string): Promise<void> {
+  const ligne = { nom: s.nom, type: s.type, solde: centsVersDecimal(Math.abs(s.solde)), maj_le: aujourdhui };
+  const sb = supabaseNavigateur();
+  verifier(id ? await sb.from("comptes").update(ligne).eq("id", id) : await sb.from("comptes").insert(ligne));
+  publier({ ...etat, comptes: await lireComptes() });
+}
+
+export async function supprimerCompte(id: string): Promise<void> {
+  verifier(await supabaseNavigateur().from("comptes").delete().eq("id", id));
+  publier({ ...etat, comptes: etat.comptes.filter((c) => c.id !== id) });
 }

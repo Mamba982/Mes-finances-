@@ -14,18 +14,20 @@ export interface Serie {
  * sont fournies dans un tableau masqué visuellement.
  */
 export function GraphiqueCourbes({ series, etiquettes, libelle, devise = "CAD" }: { series: Serie[]; etiquettes: string[]; libelle: string; devise?: string }) {
+  // Repère de 640 unités affiché sur environ 340 px au téléphone : textes à 22 unités ≈ 12 px.
   const W = 640;
-  const H = 220;
-  const G = 64;
-  const D = 30;
-  const Hh = 12;
-  const B = 28;
+  const H = 280;
+  const G = 112;
+  const D = 24;
+  const Hh = 16;
+  const B = 40;
+  const POLICE = 22;
   const tous = series.flatMap((s) => s.points.map((p) => p / 100));
   const max = Math.max(1, ...tous);
   let min = Math.min(0, ...tous);
   let pas = 10 ** Math.floor(Math.log10(max - min || 1));
   let haut = Math.ceil(max / pas) * pas;
-  if (haut / pas > 8) {
+  if (haut / pas > 5) {
     pas *= 2;
     haut = Math.ceil(max / pas) * pas;
   }
@@ -35,7 +37,7 @@ export function GraphiqueCourbes({ series, etiquettes, libelle, devise = "CAD" }
   const Y = (v: number) => Hh + (H - Hh - B) * (1 - (v - min) / (haut - min || 1));
   const graduations: number[] = [];
   for (let v = min; v <= haut + 1e-9; v += pas) graduations.push(v);
-  const chaque = Math.ceil(n / 8);
+  const chaque = Math.ceil(n / 5);
 
   return (
     <figure>
@@ -43,14 +45,15 @@ export function GraphiqueCourbes({ series, etiquettes, libelle, devise = "CAD" }
         {graduations.map((v) => (
           <g key={v}>
             <line x1={G} x2={W - D} y1={Y(v)} y2={Y(v)} stroke="var(--line)" strokeWidth={1} />
-            <text x={G - 8} y={Y(v) + 4} textAnchor="end" fill="var(--mute)" fontSize={12}>
+            <text x={G - 10} y={Y(v) + 7} textAnchor="end" fill="var(--mute)" fontSize={POLICE}>
               {formaterMontant(v * 100, 0, devise)}
             </text>
           </g>
         ))}
         {etiquettes.map((e, i) =>
-          i % chaque === 0 || i === n - 1 ? (
-            <text key={i} x={X(i)} y={H - 8} textAnchor="middle" fill="var(--mute)" fontSize={12}>
+          // Une étiquette par intervalle, la dernière toujours ; on saute celle qui la toucherait.
+          (i % chaque === 0 && (n - 1 - i >= chaque || i === n - 1)) || i === n - 1 ? (
+            <text key={i} x={X(i)} y={H - 10} textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"} fill="var(--mute)" fontSize={POLICE}>
               {e}
             </text>
           ) : null,
