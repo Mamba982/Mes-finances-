@@ -5,6 +5,7 @@ import { z } from "zod";
 import { centsVersDecimal, decimalVersCents, type Cents } from "@/domaine/argent";
 import type { Categorie, Transaction, TypeCategorie } from "@/domaine/budget";
 import { normaliserMarchand } from "@/domaine/categorisation";
+import { prochainNumero, type Facture, type StatutFacture } from "@/domaine/factures";
 import type { Priorite, Projet } from "@/domaine/projets";
 import { schemaProfil, type Profil } from "./profil";
 import { supabaseNavigateur } from "./supabase-navigateur";
@@ -19,6 +20,7 @@ export interface Donnees {
   categories: Categorie[];
   transactions: Transaction[];
   projets: Projet[];
+  factures: Facture[];
 }
 
 const montant = z.union([z.string(), z.number()]).transform((v) => decimalVersCents(v));
@@ -44,6 +46,8 @@ const schemaTransaction = z
     deductible: z.boolean(),
     tps: montant,
     tvq: montant,
+    recu_chemin: z.string().nullable(),
+    facture_id: z.uuid().nullable(),
   })
   .transform(
     (t): Transaction => ({
@@ -56,6 +60,46 @@ const schemaTransaction = z
       deductible: t.deductible,
       tps: t.tps,
       tvq: t.tvq,
+      recuChemin: t.recu_chemin,
+      factureId: t.facture_id,
+    }),
+  );
+
+const schemaFacture = z
+  .object({
+    id: z.uuid(),
+    numero: z.string(),
+    client: z.string(),
+    courriel: z.string().nullable(),
+    description: z.string(),
+    montant_ht: montant,
+    taxable: z.boolean(),
+    taux_tps: z.union([z.string(), z.number()]).transform(Number),
+    taux_tvq: z.union([z.string(), z.number()]).transform(Number),
+    tps: montant,
+    tvq: montant,
+    date_facture: z.string(),
+    echeance: z.string().nullable(),
+    statut: z.enum(["brouillon", "envoyee", "payee"]),
+    date_paiement: z.string().nullable(),
+  })
+  .transform(
+    (f): Facture => ({
+      id: f.id,
+      numero: f.numero,
+      client: f.client,
+      courriel: f.courriel,
+      description: f.description,
+      montantHt: f.montant_ht,
+      taxable: f.taxable,
+      tauxTps: f.taux_tps,
+      tauxTvq: f.taux_tvq,
+      tps: f.tps,
+      tvq: f.tvq,
+      date: f.date_facture,
+      echeance: f.echeance,
+      statut: f.statut,
+      datePaiement: f.date_paiement,
     }),
   );
 
@@ -85,10 +129,10 @@ const schemaProjet = z
     }),
   );
 
-const COLONNES_TX = "id,date,libelle_brut,marchand,montant,categorie_id,deductible,tps,tvq";
+const COLONNES_TX = "id,date,libelle_brut,marchand,montant,categorie_id,deductible,tps,tvq,recu_chemin,facture_id";
 const PAGE = 1000;
 
-let etat: Donnees = { statut: "vide", profil: null, categories: [], transactions: [], projets: [] };
+let etat: Donnees = { statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [] };
 const abonnes = new Set<() => void>();
 const publier = (e: Donnees) => {
   etat = e;
@@ -132,6 +176,16 @@ async function lireProjets(): Promise<Projet[]> {
   return z.array(schemaProjet).parse(data);
 }
 
+async function lireFactures(): Promise<Facture[]> {
+  const { data, error } = await supabaseNavigateur()
+    .from("factures")
+    .select("id,numero,client,courriel,description,montant_ht,taxable,taux_tps,taux_tvq,tps,tvq,date_facture,echeance,statut,date_paiement")
+    .order("date_facture", { ascending: false })
+    .order("numero", { ascending: false });
+  if (error) throw error;
+  return z.array(schemaFacture).parse(data);
+}
+
 async function lireProfil(): Promise<Profil> {
   const { data, error } = await supabaseNavigateur().from("profils").select("*").single();
   if (error) throw error;
@@ -141,8 +195,14 @@ async function lireProfil(): Promise<Profil> {
 export async function charger(): Promise<void> {
   if (etat.statut === "vide") publier({ ...etat, statut: "chargement" });
   try {
-    const [profil, categories, transactions, projets] = await Promise.all([lireProfil(), lireCategories(), lireTransactions(), lireProjets()]);
-    publier({ statut: "pret", profil, categories, transactions, projets });
+    const [profil, categories, transactions, projets, factures] = await Promise.all([
+      lireProfil(),
+      lireCategories(),
+      lireTransactions(),
+      lireProjets(),
+      lireFactures(),
+    ]);
+    publier({ statut: "pret", profil, categories, transactions, projets, factures });
   } catch {
     publier({ ...etat, statut: etat.statut === "pret" ? "pret" : "erreur" });
     throw new Error("lecture");
@@ -150,7 +210,7 @@ export async function charger(): Promise<void> {
 }
 
 export function vider(): void {
-  publier({ statut: "vide", profil: null, categories: [], transactions: [], projets: [] });
+  publier({ statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [] });
 }
 
 async function rechargerTransactions() {
@@ -193,8 +253,12 @@ export async function modifierTransaction(id: string, s: SaisieTransaction): Pro
 }
 
 export async function supprimerTransaction(id: string): Promise<void> {
-  const { error } = await supabaseNavigateur().from("transactions").delete().eq("id", id);
+  const sb = supabaseNavigateur();
+  const chemin = etat.transactions.find((t) => t.id === id)?.recuChemin;
+  const { error } = await sb.from("transactions").delete().eq("id", id);
   if (error) throw error;
+  // La photo du reçu part avec la transaction (un échec ici laisse un fichier orphelin, sans donnée exposée).
+  if (chemin) await sb.storage.from("recus").remove([chemin]);
   publier({ ...etat, transactions: etat.transactions.filter((t) => t.id !== id) });
 }
 
@@ -354,6 +418,154 @@ export async function appliquerScenario(projets: { id: string; echeance: string;
 export async function modifierCapacite(mode: "auto" | "manuel", manuelle: Cents): Promise<void> {
   verifier(
     await supabaseNavigateur().from("profils").update({ mode_capacite: mode, capacite_manuelle: centsVersDecimal(manuelle) }).not("user_id", "is", null),
+  );
+  publier({ ...etat, profil: await lireProfil() });
+}
+
+// ---------------------------------------------------------------- affaires
+
+export interface SaisieFacture {
+  client: string;
+  courriel: string | null;
+  description: string;
+  montantHt: Cents;
+  taxable: boolean;
+  date: string;
+  echeance: string | null;
+}
+
+const ligneFacture = (s: SaisieFacture) => ({
+  client: s.client,
+  courriel: s.courriel,
+  description: s.description,
+  montant_ht: centsVersDecimal(s.montantHt),
+  taxable: s.taxable,
+  date_facture: s.date,
+  echeance: s.echeance,
+});
+
+async function rechargerFactures() {
+  publier({ ...etat, factures: await lireFactures() });
+}
+
+/**
+ * Crée une facture avec le prochain numéro de son année. Les taux de taxes du profil y sont copiés ;
+ * la base calcule TPS et TVQ. Si un autre appareil a pris le même numéro, on recalcule une fois.
+ */
+export async function creerFacture(s: SaisieFacture, statut: "brouillon" | "envoyee" = "brouillon"): Promise<void> {
+  const sb = supabaseNavigateur();
+  const annee = Number(s.date.slice(0, 4));
+  for (let essai = 0; essai < 2; essai++) {
+    const numeros = essai === 0 ? etat.factures.map((f) => f.numero) : (await lireFactures()).map((f) => f.numero);
+    const { error } = await sb.from("factures").insert({
+      ...ligneFacture(s),
+      statut,
+      numero: prochainNumero(numeros, annee),
+      taux_tps: String(etat.profil?.taux_tps ?? 5),
+      taux_tvq: String(etat.profil?.taux_tvq ?? 9.975),
+    });
+    if (!error) return rechargerFactures();
+    if (error.code !== "23505") throw error;
+  }
+  throw new Error("numéro de facture");
+}
+
+export async function modifierFacture(id: string, s: SaisieFacture): Promise<void> {
+  verifier(await supabaseNavigateur().from("factures").update(ligneFacture(s)).eq("id", id));
+  await rechargerFactures();
+}
+
+/** Brouillon ↔ envoyée par une mise à jour ; « payée » seulement par la fonction SQL qui crée le revenu. */
+export async function changerStatutFacture(id: string, statut: StatutFacture, datePaiement: string): Promise<void> {
+  const sb = supabaseNavigateur();
+  if (statut === "payee") verifier(await sb.rpc("marquer_facture_payee", { p_facture: id, p_date: datePaiement }));
+  else verifier(await sb.from("factures").update({ statut }).eq("id", id));
+  const [factures, transactions] = await Promise.all([lireFactures(), lireTransactions()]);
+  publier({ ...etat, factures, transactions });
+}
+
+export async function supprimerFacture(id: string): Promise<void> {
+  verifier(await supabaseNavigateur().from("factures").delete().eq("id", id));
+  const [factures, transactions] = await Promise.all([lireFactures(), lireTransactions()]);
+  publier({ ...etat, factures, transactions });
+}
+
+export interface SaisieRecu {
+  date: string;
+  marchand: string;
+  description: string;
+  total: Cents;
+  tps: Cents;
+  tvq: Cents;
+  categorieId: string | null;
+}
+
+/**
+ * Ajoute un reçu comme dépense déductible. La photo, si fournie, va dans le dossier privé de
+ * l'utilisateur ; si l'enregistrement de la dépense échoue, la photo est retirée.
+ */
+export async function ajouterRecu(s: SaisieRecu, photo: Blob | null): Promise<void> {
+  const sb = supabaseNavigateur();
+  let chemin: string | null = null;
+  if (photo) {
+    const { data } = await sb.auth.getSession();
+    const uid = data.session?.user.id;
+    if (!uid) throw new Error("session");
+    chemin = `${uid}/${crypto.randomUUID()}.jpg`;
+    verifier(await sb.storage.from("recus").upload(chemin, photo, { contentType: "image/jpeg", upsert: false }));
+  }
+  const libelle = s.description ? `${s.marchand} : ${s.description}` : s.marchand;
+  const { error } = await sb.from("transactions").insert({
+    date: s.date,
+    libelle_brut: libelle.slice(0, 300),
+    marchand: normaliserMarchand(s.marchand),
+    montant: centsVersDecimal(-Math.abs(s.total)),
+    categorie_id: s.categorieId,
+    source: "recu",
+    deductible: true,
+    tps: centsVersDecimal(s.tps),
+    tvq: centsVersDecimal(s.tvq),
+    recu_chemin: chemin,
+  });
+  if (error) {
+    if (chemin) await sb.storage.from("recus").remove([chemin]);
+    throw error;
+  }
+  await rechargerTransactions();
+}
+
+/** Lien temporaire (2 minutes) vers la photo d'un reçu. */
+export async function lienRecu(chemin: string): Promise<string> {
+  const { data, error } = await supabaseNavigateur().storage.from("recus").createSignedUrl(chemin, 120);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+export interface SaisieProfilAffaires {
+  entreprise_nom: string | null;
+  entreprise_adresse: string | null;
+  no_tps: string | null;
+  no_tvq: string | null;
+  taux_tps: number;
+  taux_tvq: number;
+  frais_carte_pct: number;
+  frais_carte_fixe: Cents;
+  frais_interac: Cents;
+}
+
+export async function modifierProfilAffaires(s: SaisieProfilAffaires): Promise<void> {
+  verifier(
+    await supabaseNavigateur()
+      .from("profils")
+      .update({
+        ...s,
+        taux_tps: String(s.taux_tps),
+        taux_tvq: String(s.taux_tvq),
+        frais_carte_pct: String(s.frais_carte_pct),
+        frais_carte_fixe: centsVersDecimal(s.frais_carte_fixe),
+        frais_interac: centsVersDecimal(s.frais_interac),
+      })
+      .not("user_id", "is", null),
   );
   publier({ ...etat, profil: await lireProfil() });
 }

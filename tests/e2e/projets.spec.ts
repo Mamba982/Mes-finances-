@@ -29,7 +29,7 @@ test.describe("projets : parcours principal", () => {
       await page.getByRole("link", { name: "Réglages" }).click();
       await page.getByLabel("Mode de calcul").selectOption("manuel");
       await page.getByLabel("Montant à la main (par mois)").fill("500");
-      await page.getByRole("button", { name: "Enregistrer" }).click();
+      await page.getByRole("button", { name: "Enregistrer la capacité" }).click();
       await expect(page.getByText("Capacité d'épargne enregistrée.")).toBeVisible();
 
       // Les trois projets d'exemple du prototype

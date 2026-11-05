@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { aFaireBudget, aFaireProjets } from "@/domaine/accueil";
+import { taxes } from "@/domaine/factures";
 import { repartir } from "@/domaine/projets";
 import { indexer } from "@/domaine/budget";
 import { radar } from "@/domaine/radar";
@@ -54,5 +55,19 @@ describe("À faire ce mois-ci (partie projets)", () => {
   it("au plus 4 versements", () => {
     const six = [...projetsExemple(), ...projetsExemple().map((p) => ({ ...p, id: `${p.id}b` }))];
     expect(aFaireProjets(repartir(six, 1000000, AUJOURDHUI))).toHaveLength(4);
+  });
+});
+
+describe("À faire ce mois-ci (factures en retard)", () => {
+  it("relance chaque facture envoyée dont l'échéance est passée, avant les frais", () => {
+    const t = transactionsReleves();
+    const f = {
+      id: "f2", numero: "F-2026-002", client: "Événements Kasaï", courriel: null, description: "Décoration", montantHt: 120000,
+      taxable: true, tauxTps: 5, tauxTvq: 9.975, ...taxes(120000, true, 5, 9.975), date: "2026-09-25", echeance: "2026-10-25",
+      statut: "envoyee" as const, datePaiement: null,
+    };
+    const l = aFaireBudget({ transactions: t, categories: CATEGORIES, index, radar: radar(t, index, "2026-11-04"), aujourdhui: "2026-11-04", factures: [f] });
+    expect(l.map((e) => e.type)).toEqual(["relance", "frais"]);
+    expect(l[0]).toEqual({ type: "relance", ton: "bad", client: "Événements Kasaï", numero: "F-2026-002", total: 137970, jours: 10 });
   });
 });

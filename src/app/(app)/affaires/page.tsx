@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
 import { T } from "@/textes/fr-CA";
+import { VueAffaires } from "./vue";
 
 export const metadata: Metadata = { title: T.nav.affaires };
 
-export default function Page() {
-  return (
-    <>
-      <h1 className="text-xl font-extrabold">{T.nav.affaires}</h1>
-      <p className="carte note mt-4 py-6 text-center">{T.vide.affaires}</p>
-    </>
-  );
+export default function PageAffaires() {
+  return <VueAffaires />;
 }

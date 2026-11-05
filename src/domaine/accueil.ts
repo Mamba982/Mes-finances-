@@ -1,6 +1,7 @@
 import type { Cents } from "./argent";
 import { bilan, type Categorie, type IndexCategories, type Transaction } from "./budget";
 import { ajouterMois, moisDe, type DateISO } from "./dates";
+import { joursDeRetard, statutAffiche, totalFacture, type Facture } from "./factures";
 import type { Repartition } from "./projets";
 import type { Radar } from "./radar";
 
@@ -14,6 +15,7 @@ export type ElementAFaire =
   | { type: "aucune-transaction"; ton: "warn" }
   | { type: "a-classer"; ton: "warn"; nombre: number }
   | { type: "budget-depasse"; ton: "warn"; categorie: string; depassement: Cents }
+  | { type: "relance"; ton: "bad"; client: string; numero: string; total: Cents; jours: number }
   | { type: "frais"; ton: "warn"; total: Cents };
 
 export function aFaireBudget(entree: {
@@ -22,8 +24,9 @@ export function aFaireBudget(entree: {
   index: IndexCategories;
   radar: Radar;
   aujourdhui: DateISO;
+  factures?: readonly Facture[];
 }): ElementAFaire[] {
-  const { transactions, categories, index, radar, aujourdhui } = entree;
+  const { transactions, categories, index, radar, aujourdhui, factures = [] } = entree;
   const ym = moisDe(aujourdhui);
   const liste: ElementAFaire[] = [];
   const precedent = ajouterMois(ym, -1);
@@ -34,6 +37,10 @@ export function aFaireBudget(entree: {
   for (const c of categories) {
     const d = b.parCategorie.get(c.id) ?? 0;
     if (c.type === "depense" && c.budget > 0 && d > c.budget) liste.push({ type: "budget-depasse", ton: "warn", categorie: c.nom, depassement: d - c.budget });
+  }
+  for (const f of factures) {
+    if (statutAffiche(f, aujourdhui) === "retard")
+      liste.push({ type: "relance", ton: "bad", client: f.client, numero: f.numero, total: totalFacture(f), jours: joursDeRetard(f, aujourdhui) });
   }
   if (radar.totalFrais > 0) liste.push({ type: "frais", ton: "warn", total: radar.totalFrais });
   return liste;

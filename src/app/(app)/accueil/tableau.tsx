@@ -5,6 +5,7 @@ import { aFaireBudget, aFaireProjets, type ElementAFaire } from "@/domaine/accue
 import { formaterMontant } from "@/domaine/argent";
 import { bilan } from "@/domaine/budget";
 import { ajouterMois, libelleDate, libelleMois, libelleMoisCourt, moisDe } from "@/domaine/dates";
+import { resumeFactures } from "@/domaine/factures";
 import { projetAAfficher } from "@/domaine/projets";
 import { T } from "@/textes/fr-CA";
 import { useCalculs } from "@/ui/calculs";
@@ -21,12 +22,12 @@ const COULEUR_STATUT = { ok: "text-ok", atteint: "text-ok", retard: "text-warn",
  * L'ordre et les libellés ne changent pas d'une version à l'autre.
  */
 export function TableauAccueil() {
-  const { categories, transactions, index, capacite, repartition: r, radar, aujourdhui, devise } = useCalculs();
+  const { categories, transactions, factures, index, capacite, repartition: r, radar, aujourdhui, devise } = useCalculs();
   const m0 = (c: number) => formaterMontant(c, 0, devise);
   const m2 = (c: number) => formaterMontant(c, 2, devise);
   const ym = moisDe(aujourdhui);
   const bil = bilan(transactions, ym, index);
-  const aFaire = [...aFaireProjets(r), ...aFaireBudget({ transactions, categories, index, radar, aujourdhui })];
+  const aFaire = [...aFaireProjets(r), ...aFaireBudget({ transactions, categories, index, radar, aujourdhui, factures })];
   const vedette = projetAAfficher(r);
   const budgetTotal = categories.filter((c) => c.type === "depense").reduce((s, c) => s + c.budget, 0);
   const sixMois = Array.from({ length: 6 }, (_, i) => ajouterMois(ym, i - 5));
@@ -66,6 +67,15 @@ export function TableauAccueil() {
         );
       case "budget-depasse":
         return a.itemDepasse(e.categorie, m0(e.depassement));
+      case "relance":
+        return (
+          <>
+            {a.itemRelance(e.client, e.numero, m2(e.total), e.jours)}{" "}
+            <Link href="/affaires" className="lien">
+              {a.itemVoir}
+            </Link>
+          </>
+        );
       case "frais":
         return (
           <>
@@ -155,6 +165,15 @@ export function TableauAccueil() {
           }
         />
         <Kpi libelle={a.depensesMois} valeur={m0(bil.depenses)} detail={a.budgetTotal(m0(budgetTotal))} />
+        <Kpi
+          libelle={a.facturesARecevoir}
+          valeur={m0(resumeFactures(factures, aujourdhui).aRecevoir)}
+          detail={
+            <Link href="/affaires" className="lien">
+              {a.voirAffaires}
+            </Link>
+          }
+        />
       </div>
 
       {avecDonnees ? (

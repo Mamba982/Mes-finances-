@@ -21,6 +21,10 @@ export interface Transaction {
   deductible: boolean;
   tps: Cents;
   tvq: Cents;
+  /** Chemin de la photo du reçu dans le stockage, s'il y en a une. */
+  recuChemin?: string | null;
+  /** Facture dont cette transaction est le revenu, s'il y a lieu. */
+  factureId?: string | null;
 }
 
 export type IndexCategories = ReadonlyMap<string, Categorie>;
