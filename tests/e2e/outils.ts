@@ -14,5 +14,5 @@ export async function sansTexteAnglais(page: Page): Promise<void> {
 /** Vérification automatique WCAG 2.2 A et AA (ne remplace pas un test manuel au lecteur d'écran). */
 export async function accessible(page: Page): Promise<void> {
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
-  expect(r.violations.map((v) => `${v.id} : ${v.help} (${v.nodes.length})`)).toEqual([]);
+  expect(r.violations.map((v) => `${v.id} : ${v.help} → ${v.nodes.map((n) => n.target.join(" ")).join(" | ")}`)).toEqual([]);
 }

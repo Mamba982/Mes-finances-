@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { T } from "@/textes/fr-CA";
+import { VueBudget } from "./vue";
 
 export const metadata: Metadata = { title: T.nav.budget };
 
-export default function Page() {
+export default function PageBudget() {
   return (
-    <>
-      <h1 className="text-xl font-extrabold">{T.nav.budget}</h1>
-      <p className="carte note mt-4 py-6 text-center">{T.vide.budget}</p>
-    </>
+    <Suspense fallback={<p className="note py-10 text-center">{T.session.chargement}</p>}>
+      <VueBudget />
+    </Suspense>
   );
 }

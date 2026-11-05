@@ -44,3 +44,7 @@ next-env.d.ts
 # tests
 /test-results/
 /playwright-report/
+
+# copies de sauvegarde
+*.bundle
+/mes-finances-/

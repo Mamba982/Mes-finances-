@@ -33,6 +33,7 @@ Application téléphonique (PWA) de finances personnelles pour le Québec et le 
 - Chaque règle métier a un test unitaire dans `tests/unitaires/` (miroir de `src/domaine/`).
 - Parité avec le prototype : les cas chiffrés sont comparés aux résultats du prototype lui-même (`window.__fin`), date du jour figée.
 - Fin de chaque phase : `npm test`, `npm run test:e2e`, `npm run build`, `npm run lint` sans erreur, puis commit.
+- Parcours connectés : utilisateur créé par la clé secrète (`SUPABASE_SECRET_KEY`), session ouverte par `/auth/confirmer?token_hash=…`, utilisateur supprimé à la fin.
 - Un test e2e qui ne peut pas tourner (clé ou réseau absents) est sauté avec une raison explicite, jamais simulé en silence.
 
 ## Commandes
@@ -40,7 +41,8 @@ Application téléphonique (PWA) de finances personnelles pour le Québec et le 
 npm run dev                          # serveur de développement
 eval "$(bash scripts/db-test.sh)"    # Postgres local pour les tests RLS (exporte DATABASE_URL_TEST)
 npm test                             # unitaires + RLS
-npm run test:e2e                     # Playwright (lance next start ; faire npm run build avant)
+npm run test:e2e                     # Playwright : e2e + parité prototype (faire npm run build avant)
+NODE_USE_ENV_PROXY=1 npm run test:e2e  # dans le conteneur infonuagique (fetch de Node via le mandataire)
 npm run build && npm run lint
 npx tsc --noEmit
 ```

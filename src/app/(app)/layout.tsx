@@ -1,3 +1,4 @@
+import { ChargeurDonnees } from "@/ui/chargeur";
 import { EnTete, NavigationBas } from "@/ui/navigation";
 import { FournisseurSession } from "@/ui/session";
 
@@ -7,7 +8,9 @@ export default function LayoutApp({ children }: LayoutProps<"/">) {
     <>
       <EnTete />
       <main id="contenu" className="mx-auto max-w-3xl px-4 pt-4 pb-28">
-        <FournisseurSession>{children}</FournisseurSession>
+        <FournisseurSession>
+          <ChargeurDonnees>{children}</ChargeurDonnees>
+        </FournisseurSession>
       </main>
       <NavigationBas />
     </>

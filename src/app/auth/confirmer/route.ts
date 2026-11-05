@@ -1,11 +1,11 @@
-import { NextResponse, type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { supabaseServeur } from "@/donnees/supabase-serveur";
 
 /** Arrivée depuis le lien magique : échange le code contre une session, puis va à l'accueil. */
 export async function GET(req: NextRequest) {
-  const url = req.nextUrl;
-  const code = url.searchParams.get("code");
-  const tokenHash = url.searchParams.get("token_hash");
+  const params = req.nextUrl.searchParams;
+  const code = params.get("code");
+  const tokenHash = params.get("token_hash");
   const supabase = await supabaseServeur();
 
   let ok = false;
@@ -15,8 +15,10 @@ export async function GET(req: NextRequest) {
     ok = !(await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "email" })).error;
   }
 
-  const cible = new URL(ok ? "/accueil" : "/connexion?erreur=lien", url.origin);
-  const res = NextResponse.redirect(cible);
-  res.headers.set("Cache-Control", "private, no-store");
-  return res;
+  // Redirection relative : le navigateur reste sur l'hôte où les cookies de session viennent d'être posés
+  // (une URL absolue construite côté serveur peut être normalisée, ex. 127.0.0.1 → localhost).
+  return new Response(null, {
+    status: 303,
+    headers: { Location: ok ? "/accueil" : "/connexion?erreur=lien", "Cache-Control": "private, no-store" },
+  });
 }

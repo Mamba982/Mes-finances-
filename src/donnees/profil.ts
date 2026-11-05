@@ -1,8 +1,5 @@
-"use client";
-
 import { z } from "zod";
 import { decimalVersCents } from "@/domaine/argent";
-import { supabaseNavigateur } from "./supabase-navigateur";
 
 const montant = z.union([z.string(), z.number()]).transform((v) => decimalVersCents(v));
 const taux = z.union([z.string(), z.number()]).transform((v) => Number(v));
@@ -24,9 +21,3 @@ export const schemaProfil = z.object({
   no_tvq: z.string().nullable(),
 });
 export type Profil = z.infer<typeof schemaProfil>;
-
-export async function lireProfil(): Promise<Profil> {
-  const { data, error } = await supabaseNavigateur().from("profils").select("*").single();
-  if (error) throw error;
-  return schemaProfil.parse(data);
-}

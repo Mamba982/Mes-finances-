@@ -1,0 +1,277 @@
+[
+ {
+  "date": "2026-08-01",
+  "libelle": "VIREMENT INTERAC LOYER PROPRIETAIRE",
+  "montant": -105000
+ },
+ {
+  "date": "2026-08-02",
+  "libelle": "DEPOT DIRECT PAIE EMPLOYEUR",
+  "montant": 145000
+ },
+ {
+  "date": "2026-08-03",
+  "libelle": "RTC CARTE OPUS",
+  "montant": -9700
+ },
+ {
+  "date": "2026-08-04",
+  "libelle": "VIREMENT VERS EPARGNE",
+  "montant": -30000
+ },
+ {
+  "date": "2026-08-05",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -9100
+ },
+ {
+  "date": "2026-08-08",
+  "libelle": "VIDEOTRON LTEE",
+  "montant": -8500
+ },
+ {
+  "date": "2026-08-09",
+  "libelle": "NETFLIX.COM",
+  "montant": -1899
+ },
+ {
+  "date": "2026-08-11",
+  "libelle": "SPOTIFY P2F3",
+  "montant": -1299
+ },
+ {
+  "date": "2026-08-12",
+  "libelle": "HYDRO-QUEBEC PAIEMENT",
+  "montant": -6600
+ },
+ {
+  "date": "2026-08-13",
+  "libelle": "IGA EXTRA 0421",
+  "montant": -10100
+ },
+ {
+  "date": "2026-08-15",
+  "libelle": "TIM HORTONS #2231",
+  "montant": -1050
+ },
+ {
+  "date": "2026-08-16",
+  "libelle": "DEPOT DIRECT PAIE EMPLOYEUR",
+  "montant": 145000
+ },
+ {
+  "date": "2026-08-18",
+  "libelle": "REMITLY TRANSFERT",
+  "montant": -15000
+ },
+ {
+  "date": "2026-08-21",
+  "libelle": "INTERETS CARTE DE CREDIT",
+  "montant": -1182
+ },
+ {
+  "date": "2026-08-22",
+  "libelle": "RESTAURANT CHEZ ASHTON",
+  "montant": -2700
+ },
+ {
+  "date": "2026-08-27",
+  "libelle": "METRO PLUS",
+  "montant": -6700
+ },
+ {
+  "date": "2026-08-28",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -495
+ },
+ {
+  "date": "2026-09-01",
+  "libelle": "VIREMENT INTERAC LOYER PROPRIETAIRE",
+  "montant": -105000
+ },
+ {
+  "date": "2026-09-02",
+  "libelle": "DEPOT DIRECT PAIE EMPLOYEUR",
+  "montant": 145000
+ },
+ {
+  "date": "2026-09-03",
+  "libelle": "RTC CARTE OPUS",
+  "montant": -9700
+ },
+ {
+  "date": "2026-09-04",
+  "libelle": "VIREMENT VERS EPARGNE",
+  "montant": -30000
+ },
+ {
+  "date": "2026-09-05",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -9400
+ },
+ {
+  "date": "2026-09-08",
+  "libelle": "VIDEOTRON LTEE",
+  "montant": -8500
+ },
+ {
+  "date": "2026-09-09",
+  "libelle": "NETFLIX.COM",
+  "montant": -1899
+ },
+ {
+  "date": "2026-09-11",
+  "libelle": "SPOTIFY P2F3",
+  "montant": -1299
+ },
+ {
+  "date": "2026-09-12",
+  "libelle": "HYDRO-QUEBEC PAIEMENT",
+  "montant": -7000
+ },
+ {
+  "date": "2026-09-13",
+  "libelle": "IGA EXTRA 0421",
+  "montant": -10600
+ },
+ {
+  "date": "2026-09-14",
+  "libelle": "AMAZON.COM USD",
+  "montant": -6420
+ },
+ {
+  "date": "2026-09-14",
+  "libelle": "FRAIS DE CONVERSION DEVISE",
+  "montant": -161
+ },
+ {
+  "date": "2026-09-15",
+  "libelle": "TIM HORTONS #2231",
+  "montant": -1150
+ },
+ {
+  "date": "2026-09-16",
+  "libelle": "DEPOT DIRECT PAIE EMPLOYEUR",
+  "montant": 145000
+ },
+ {
+  "date": "2026-09-18",
+  "libelle": "REMITLY TRANSFERT",
+  "montant": -15000
+ },
+ {
+  "date": "2026-09-22",
+  "libelle": "RESTAURANT CHEZ ASHTON",
+  "montant": -3000
+ },
+ {
+  "date": "2026-09-27",
+  "libelle": "METRO PLUS",
+  "montant": -6900
+ },
+ {
+  "date": "2026-09-28",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -495
+ },
+ {
+  "date": "2026-10-01",
+  "libelle": "VIREMENT INTERAC LOYER PROPRIETAIRE",
+  "montant": -105000
+ },
+ {
+  "date": "2026-10-02",
+  "libelle": "DEPOT DIRECT PAIE EMPLOYEUR",
+  "montant": 145000
+ },
+ {
+  "date": "2026-10-03",
+  "libelle": "RTC CARTE OPUS",
+  "montant": -9700
+ },
+ {
+  "date": "2026-10-04",
+  "libelle": "VIREMENT VERS EPARGNE",
+  "montant": -30000
+ },
+ {
+  "date": "2026-10-05",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -9700
+ },
+ {
+  "date": "2026-10-08",
+  "libelle": "VIDEOTRON LTEE",
+  "montant": -8500
+ },
+ {
+  "date": "2026-10-09",
+  "libelle": "NETFLIX.COM",
+  "montant": -1899
+ },
+ {
+  "date": "2026-10-11",
+  "libelle": "SPOTIFY P2F3",
+  "montant": -1299
+ },
+ {
+  "date": "2026-10-12",
+  "libelle": "HYDRO-QUEBEC PAIEMENT",
+  "montant": -7400
+ },
+ {
+  "date": "2026-10-13",
+  "libelle": "IGA EXTRA 0421",
+  "montant": -11100
+ },
+ {
+  "date": "2026-10-15",
+  "libelle": "TIM HORTONS #2231",
+  "montant": -1250
+ },
+ {
+  "date": "2026-10-15",
+  "libelle": "TIM HORTONS #2231",
+  "montant": -1250
+ },
+ {
+  "date": "2026-10-16",
+  "libelle": "DEPOT DIRECT PAIE EMPLOYEUR",
+  "montant": 145000
+ },
+ {
+  "date": "2026-10-18",
+  "libelle": "REMITLY TRANSFERT",
+  "montant": -15000
+ },
+ {
+  "date": "2026-10-22",
+  "libelle": "RESTAURANT CHEZ ASHTON",
+  "montant": -3300
+ },
+ {
+  "date": "2026-10-24",
+  "libelle": "CANADIAN TIRE 0442",
+  "montant": -5850
+ },
+ {
+  "date": "2026-10-27",
+  "libelle": "METRO PLUS",
+  "montant": -7100
+ },
+ {
+  "date": "2026-10-28",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -495
+ },
+ {
+  "date": "2026-11-02",
+  "libelle": "DEPOT DIRECT PAIE EMPLOYEUR",
+  "montant": 145000
+ },
+ {
+  "date": "2026-11-03",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -9150
+ }
+]
