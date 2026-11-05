@@ -41,4 +41,4 @@ if (!r.ok) {
   console.error(`Échec ${r.status} :`, await r.text());
   process.exit(1);
 }
-console.log("SMTP et modèles de courriel appliqués. Réactive la saisie du code à 6 chiffres dans l'écran de connexion.");
+console.log("SMTP et modèles de courriel appliqués : le courriel de connexion contient maintenant le lien et le code.");

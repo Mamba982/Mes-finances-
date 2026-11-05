@@ -19,7 +19,7 @@ test.describe("socle sans session", () => {
     await accessible(page);
 
     await page.getByLabel("Courriel").fill("pas-un-courriel");
-    await page.getByRole("button", { name: "Recevoir le lien" }).click();
+    await page.getByRole("button", { name: "Recevoir le lien et le code" }).click();
     await expect(page.getByRole("status")).toHaveText(/adresse courriel valide/);
     expect(appelsSupabase).toBe(0);
     await sansTexteAnglais(page);
