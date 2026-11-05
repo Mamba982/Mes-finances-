@@ -355,6 +355,8 @@ mes-finances/
 
 **Usage personnel (aujourd'hui)** : Supabase gratuit (ca-central-1), envoi de courriels intégré de Supabase (modèles en anglais, lien à ouvrir dans le même navigateur), Vercel Hobby, IA éteinte, responsable de la protection des renseignements personnels : Jonathan Mboko.
 
+**Production** : https://mes-finances-phi.vercel.app (projet Vercel `mes-finances`, relié à `Mamba982/Mes-finances-` : chaque poussée sur `main` redéploie ; fonctions en `iad1`). Variables : `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (publiques) ; `SUPABASE_SECRET_KEY` à saisir dans Vercel par le propriétaire (type « Sensitive »), sans quoi la suppression du compte répond « indisponible ». Supabase : Site URL = l'adresse de production, Redirect URLs = `https://mes-finances-phi.vercel.app/auth/confirmer` (plus `http://localhost:3000/auth/confirmer` pour le développement).
+
 **Mesures** : accueil à la visite suivante en 4G lente simulée (150 ms, 1,6 Mb/s) : environ 190 ms (copie locale + service worker). Première visite sans cache, du lien de connexion à l'accueil rempli : environ 3,1 s dans les mêmes conditions. L'objectif « moins d'une seconde » est donc atteint pour les visites suivantes seulement.
 
 ### Ce qui changera au passage au public
