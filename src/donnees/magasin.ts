@@ -8,6 +8,7 @@ import { normaliserMarchand } from "@/domaine/categorisation";
 import { prochainNumero, type Facture, type StatutFacture } from "@/domaine/factures";
 import { TYPES_COMPTE, type Compte, type TypeCompte } from "@/domaine/placements";
 import type { Priorite, Projet } from "@/domaine/projets";
+import { motifDepuisLibelle, regleApplicable, type RegleCategorie } from "@/domaine/regles";
 import { schemaProfil, type Profil } from "./profil";
 import { supabaseNavigateur } from "./supabase-navigateur";
 
@@ -23,6 +24,7 @@ export interface Donnees {
   projets: Projet[];
   factures: Facture[];
   comptes: Compte[];
+  regles: RegleCategorie[];
 }
 
 const montant = z.union([z.string(), z.number()]).transform((v) => decimalVersCents(v));
@@ -134,7 +136,7 @@ const schemaProjet = z
 const COLONNES_TX = "id,date,libelle_brut,marchand,montant,categorie_id,deductible,tps,tvq,recu_chemin,facture_id";
 const PAGE = 1000;
 
-let etat: Donnees = { statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [], comptes: [] };
+let etat: Donnees = { statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [], comptes: [], regles: [] };
 const abonnes = new Set<() => void>();
 const publier = (e: Donnees) => {
   etat = e;
@@ -198,6 +200,16 @@ async function lireComptes(): Promise<Compte[]> {
   return z.array(schemaCompte).parse(data);
 }
 
+const schemaRegle = z
+  .object({ id: z.uuid(), motif: z.string(), categorie_id: z.uuid(), origine: z.enum(["manuel", "auto"]) })
+  .transform((r): RegleCategorie => ({ id: r.id, motif: r.motif, categorieId: r.categorie_id, origine: r.origine }));
+
+async function lireRegles(): Promise<RegleCategorie[]> {
+  const { data, error } = await supabaseNavigateur().from("regles_categorie").select("id,motif,categorie_id,origine").order("motif");
+  if (error) throw error;
+  return z.array(schemaRegle).parse(data);
+}
+
 async function lireProfil(): Promise<Profil> {
   const { data, error } = await supabaseNavigateur().from("profils").select("*").single();
   if (error) throw error;
@@ -207,15 +219,16 @@ async function lireProfil(): Promise<Profil> {
 export async function charger(): Promise<void> {
   if (etat.statut === "vide") publier({ ...etat, statut: "chargement" });
   try {
-    const [profil, categories, transactions, projets, factures, comptes] = await Promise.all([
+    const [profil, categories, transactions, projets, factures, comptes, regles] = await Promise.all([
       lireProfil(),
       lireCategories(),
       lireTransactions(),
       lireProjets(),
       lireFactures(),
       lireComptes(),
+      lireRegles(),
     ]);
-    publier({ statut: "pret", profil, categories, transactions, projets, factures, comptes });
+    publier({ statut: "pret", profil, categories, transactions, projets, factures, comptes, regles });
   } catch {
     publier({ ...etat, statut: etat.statut === "pret" ? "pret" : "erreur" });
     throw new Error("lecture");
@@ -223,7 +236,7 @@ export async function charger(): Promise<void> {
 }
 
 export function vider(): void {
-  publier({ statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [], comptes: [] });
+  publier({ statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [], comptes: [], regles: [] });
 }
 
 async function rechargerTransactions() {
@@ -275,16 +288,28 @@ export async function supprimerTransaction(id: string): Promise<void> {
   publier({ ...etat, transactions: etat.transactions.filter((t) => t.id !== id) });
 }
 
-/** Changer la catégorie : affiché tout de suite, annulé si l'enregistrement échoue. */
-export async function classer(id: string, categorieId: string | null): Promise<void> {
+export interface Apprentissage {
+  /** Motif retenu (ou mis à jour) pour cette correction ; null si aucune règle n'a pu être retenue. */
+  motif: string | null;
+  /** Autres transactions encore à classer auxquelles la règle s'applique. */
+  autres: string[];
+}
+
+/**
+ * Changer la catégorie : affiché tout de suite, annulé si l'enregistrement échoue.
+ * Une correction retient une règle (marchand → catégorie) pour les prochains imports.
+ */
+export async function classer(id: string, categorieId: string | null): Promise<Apprentissage> {
   const avant = etat.transactions;
+  const tx = avant.find((t) => t.id === id);
   const code = categorieId ? etat.categories.find((c) => c.id === categorieId)?.code : null;
   const deductible = code === "affaires" ? true : undefined;
   publier({
     ...etat,
     transactions: avant.map((t) => (t.id === id ? { ...t, categorieId, deductible: deductible ?? t.deductible } : t)),
   });
-  const { error } = await supabaseNavigateur()
+  const sb = supabaseNavigateur();
+  const { error } = await sb
     .from("transactions")
     .update({ categorie_id: categorieId, ...(deductible ? { deductible } : {}) })
     .eq("id", id);
@@ -292,6 +317,55 @@ export async function classer(id: string, categorieId: string | null): Promise<v
     publier({ ...etat, transactions: avant });
     throw error;
   }
+
+  const motif = tx && categorieId ? motifDepuisLibelle(tx.libelle) : null;
+  if (!motif || !categorieId) return { motif: null, autres: [] };
+  // L'échec de l'apprentissage n'annule pas la correction : la catégorie est déjà enregistrée.
+  const existante = etat.regles.find((r) => r.motif === motif);
+  const r = existante
+    ? await sb.from("regles_categorie").update({ categorie_id: categorieId }).eq("id", existante.id)
+    : await sb.from("regles_categorie").insert({ motif, categorie_id: categorieId, origine: "auto" });
+  if (r.error) return { motif: null, autres: [] };
+  const regles = await lireRegles();
+  publier({ ...etat, regles });
+  const nouvelle = regles.filter((x) => x.motif === motif);
+  const autres = etat.transactions.filter((t) => t.id !== id && !t.categorieId && regleApplicable(nouvelle, t.libelle)).map((t) => t.id);
+  return { motif, autres };
+}
+
+/** Classe plusieurs transactions en une opération (fonction SQL classer_transactions). */
+export async function classerLot(lignes: { id: string; categorieId: string }[]): Promise<number> {
+  if (!lignes.length) return 0;
+  const { data, error } = await supabaseNavigateur().rpc("classer_transactions", {
+    p_lignes: lignes.map((l) => ({ id: l.id, categorie_id: l.categorieId })),
+  });
+  if (error) throw error;
+  await rechargerTransactions();
+  return z.number().int().parse(data);
+}
+
+export async function ajouterRegle(motif: string, categorieId: string): Promise<void> {
+  const { error } = await supabaseNavigateur().from("regles_categorie").insert({ motif, categorie_id: categorieId, origine: "manuel" });
+  if (error) throw error;
+  publier({ ...etat, regles: await lireRegles() });
+}
+
+export async function modifierRegle(id: string, categorieId: string): Promise<void> {
+  const { error } = await supabaseNavigateur().from("regles_categorie").update({ categorie_id: categorieId }).eq("id", id);
+  if (error) throw error;
+  publier({ ...etat, regles: await lireRegles() });
+}
+
+export async function supprimerRegle(id: string): Promise<void> {
+  const { error } = await supabaseNavigateur().from("regles_categorie").delete().eq("id", id);
+  if (error) throw error;
+  publier({ ...etat, regles: etat.regles.filter((r) => r.id !== id) });
+}
+
+export async function modifierIa(active: boolean): Promise<void> {
+  const { error } = await supabaseNavigateur().from("profils").update({ ia_active: active }).not("user_id", "is", null);
+  if (error) throw error;
+  publier({ ...etat, profil: await lireProfil() });
 }
 
 export interface LigneAImporter {

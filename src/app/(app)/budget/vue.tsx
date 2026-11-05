@@ -7,7 +7,8 @@ import { formaterMontant } from "@/domaine/argent";
 import { bilan, indexer, SANS_CATEGORIE, type Transaction } from "@/domaine/budget";
 import { ajouterMois, aujourdhuiLocal, libelleDate, libelleMois, moisDe } from "@/domaine/dates";
 import { radar as calculerRadar } from "@/domaine/radar";
-import { classer, useDonnees } from "@/donnees/magasin";
+import { classer, classerLot, useDonnees } from "@/donnees/magasin";
+import { ClasserAvecIa } from "./classer-ia";
 import { T } from "@/textes/fr-CA";
 import { Kpi } from "@/ui/kpi";
 import { DialogueTransaction } from "./transaction-dialogue";
@@ -27,6 +28,7 @@ export function VueBudget() {
   const [recherche, setRecherche] = useState("");
   const [dialogue, setDialogue] = useState<{ tx: Transaction | null } | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [appris, setAppris] = useState<{ motif: string; categorieId: string; autres: string[] } | null>(null);
   const idRecherche = useId();
 
   const cats = useMemo(() => indexer(categories), [categories]);
@@ -47,8 +49,20 @@ export function VueBudget() {
 
   async function changerCategorie(id: string, categorieId: string) {
     setErreur(null);
+    setAppris(null);
     try {
-      await classer(id, categorieId || null);
+      const r = await classer(id, categorieId || null);
+      if (r.motif && categorieId) setAppris({ motif: r.motif, categorieId, autres: r.autres });
+    } catch {
+      setErreur(b.erreurEnregistrement);
+    }
+  }
+
+  async function classerAutres() {
+    if (!appris) return;
+    try {
+      await classerLot(appris.autres.map((id) => ({ id, categorieId: appris.categorieId })));
+      setAppris({ ...appris, autres: [] });
     } catch {
       setErreur(b.erreurEnregistrement);
     }
@@ -97,9 +111,14 @@ export function VueBudget() {
 
       <div className="mt-6 mb-2.5 flex items-center justify-between gap-2">
         <h2 className="text-[17px] font-bold">{b.parCategorie}</h2>
-        <Link href="/budget/categories" className="lien text-sm">
-          {b.modifierBudgets}
-        </Link>
+        <div className="flex gap-3">
+          <Link href="/budget/regles" className="lien text-sm">
+            {T.regles.lien}
+          </Link>
+          <Link href="/budget/categories" className="lien text-sm">
+            {b.modifierBudgets}
+          </Link>
+        </div>
       </div>
       <div className="carte grid gap-3 sm:grid-cols-2">
         {lignesCategories.length ? (
@@ -148,6 +167,22 @@ export function VueBudget() {
           {erreur}
         </p>
       ) : null}
+      {appris ? (
+        <div className="alerte mb-2 border-accent" role="status">
+          <p>{T.regles.retenueMessage(appris.motif, cats.get(appris.categorieId)?.nom ?? "")}</p>
+          <div className="mt-1 flex flex-wrap gap-x-4">
+            {appris.autres.length ? (
+              <button type="button" className="lien min-h-11" onClick={() => void classerAutres()}>
+                {T.regles.classerAutres(appris.autres.length)}
+              </button>
+            ) : null}
+            <Link href="/budget/regles" className="lien inline-flex min-h-11 items-center">
+              {T.regles.voirRegles}
+            </Link>
+          </div>
+        </div>
+      ) : null}
+      <ClasserAvecIa />
       {visibles.length ? (
         <ul className="carte divide-y divide-line p-0">
           {visibles.map((t) => (

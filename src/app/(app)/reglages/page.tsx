@@ -3,6 +3,7 @@ import { T } from "@/textes/fr-CA";
 import { ChoixTheme, Deconnexion } from "./actions";
 import { FormulaireAffaires } from "./affaires";
 import { FormulaireCapacite } from "./capacite";
+import { ReglageIa } from "./ia";
 
 export const metadata: Metadata = { title: T.nav.reglages };
 
@@ -15,6 +16,9 @@ export default function Page() {
       </section>
       <section className="carte mt-3">
         <FormulaireAffaires />
+      </section>
+      <section className="carte mt-3">
+        <ReglageIa />
       </section>
       <section className="carte mt-3">
         <ChoixTheme />

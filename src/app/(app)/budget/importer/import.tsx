@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, type ChangeEvent } from "react";
 import { formaterMontant } from "@/domaine/argent";
-import { categorieAuto } from "@/domaine/categorisation";
 import { libelleDate, moisDe } from "@/domaine/dates";
 import { empreintes, marquerDoublons, type StatutDoublon } from "@/domaine/doublons";
+import { classer } from "@/domaine/regles";
 import { lireCsv, type LigneReleve } from "@/import/csv/lire";
 import { importer, useDonnees } from "@/donnees/magasin";
 import { T } from "@/textes/fr-CA";
@@ -28,7 +28,7 @@ interface Revue {
 }
 
 export function ImportReleve() {
-  const { categories, transactions, profil } = useDonnees();
+  const { categories, transactions, profil, regles } = useDonnees();
   const router = useRouter();
   const [revue, setRevue] = useState<Revue | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -56,8 +56,9 @@ export function ImportReleve() {
       source,
       lues: r.lues,
       lignes: r.lignes.map((l, i) => {
-        const code = categorieAuto(l.libelle, l.montant);
-        return { ...l, categorieId: (code && parCode.get(code)) ?? null, statut: statuts[i]!, retenue: !statuts[i] };
+        // Tes règles d'abord (ajoutées ou retenues), puis les règles par défaut.
+        const c = classer(l.libelle, l.montant, regles, parCode);
+        return { ...l, categorieId: c?.categorieId ?? null, statut: statuts[i]!, retenue: !statuts[i] };
       }),
     });
   }

@@ -19,5 +19,6 @@ export const schemaProfil = z.object({
   entreprise_adresse: z.string().nullable(),
   no_tps: z.string().nullable(),
   no_tvq: z.string().nullable(),
+  ia_active: z.boolean(),
 });
 export type Profil = z.infer<typeof schemaProfil>;

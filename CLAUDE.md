@@ -21,6 +21,8 @@ Application téléphonique (PWA) de finances personnelles pour le Québec et le 
 ## Architecture
 - Pages statiques + données lues dans le navigateur par `supabase-js`. **La RLS est la frontière de sécurité**, pas la garde de session.
 - Règles métier = fonctions pures dans `src/domaine/` (aucun accès réseau, aucune date système implicite : la date du jour est un paramètre).
+- Classement des transactions : règles de l'utilisateur (`src/domaine/regles.ts`) puis règles par défaut du prototype. Pas de dépendance à l'IA.
+- IA facultative et éteinte : sans `ANTHROPIC_API_KEY`, `/api/ia/*` répond 503 avant toute requête externe. L'utilisateur doit aussi l'activer dans les réglages (Loi 25).
 - Le modèle d'IA ne calcule jamais : il extrait ou classe ; les calculs sont dans `src/domaine/`. Toute réponse IA passe par un schéma Zod ; invalide → message d'erreur, rien n'est enregistré.
 - Clés secrètes (Anthropic, Supabase secrète) : serveur seulement (`import "server-only"`), jamais `NEXT_PUBLIC_`.
 - Next 16 : lire `node_modules/next/dist/docs/` avant d'utiliser une API (voir AGENTS.md).
