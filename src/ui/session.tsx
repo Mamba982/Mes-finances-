@@ -3,6 +3,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { createContext, use, useEffect, useState, type ReactNode } from "react";
+import { oublierAppareil } from "@/donnees/magasin";
 import { supabaseNavigateur } from "@/donnees/supabase-navigateur";
 import { T } from "@/textes/fr-CA";
 
@@ -25,7 +26,9 @@ export function FournisseurSession({ children }: { children: ReactNode }) {
       setSession(data.session);
       if (!data.session) router.replace("/connexion");
     });
-    const { data } = sb.auth.onAuthStateChange((_evt, s) => {
+    const { data } = sb.auth.onAuthStateChange((evt, s) => {
+      // Déconnexion explicite : la copie locale des données est effacée de l'appareil.
+      if (evt === "SIGNED_OUT") void oublierAppareil();
       setSession(s);
       if (!s) router.replace("/connexion");
     });

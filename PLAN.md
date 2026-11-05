@@ -350,3 +350,30 @@ mes-finances/
     └── fixtures/releves/     desjardins.csv, banque-nationale.csv, rbc.csv, td.csv,
                               bmo.csv, scotia.csv, tangerine.csv (fictifs)
 ```
+
+## 6. État à la livraison (phase 7, 2026-11-05) et passage au public
+
+**Usage personnel (aujourd'hui)** : Supabase gratuit (ca-central-1), envoi de courriels intégré de Supabase (modèles en anglais, lien à ouvrir dans le même navigateur), Vercel Hobby, IA éteinte, responsable de la protection des renseignements personnels : Jonathan Mboko.
+
+**Mesures** : accueil à la visite suivante en 4G lente simulée (150 ms, 1,6 Mb/s) : environ 190 ms (copie locale + service worker). Première visite sans cache, du lien de connexion à l'accueil rempli : environ 3,1 s dans les mêmes conditions. L'objectif « moins d'une seconde » est donc atteint pour les visites suivantes seulement.
+
+### Ce qui changera au passage au public
+
+| # | Changement | Pourquoi | Coût ou effort |
+|---|---|---|---|
+| 1 | **SMTP Brevo** : créer le compte, vérifier l'expéditeur (domaine), remplir `SMTP_*`, `SUPABASE_ACCESS_TOKEN`, puis `node --env-file=.env.local scripts/configurer-courriels.mjs` | L'envoi intégré de Supabase est limité (débit très bas, destinataires restreints) ; il applique aussi les modèles français de `supabase/modeles/` | Brevo gratuit : environ 300 courriels/jour |
+| 2 | **Réactiver la saisie du code à 6 chiffres** dans l'écran de connexion (les modèles contiennent déjà `{{ .Token }}`) | Sur iPhone, l'application installée ne reçoit pas la session d'un lien ouvert dans Safari | Petit |
+| 3 | **Lien du courriel vers `/auth/confirmer?token_hash=…`** (déjà dans les modèles) | Le lien fonctionnera dans n'importe quel navigateur, plus seulement celui qui l'a demandé | Inclus dans 1 |
+| 4 | **Supabase Pro** | Le gratuit met le projet en pause après 7 jours sans activité et n'offre pas de sauvegardes adaptées à des données financières | Environ 25 $ US/mois |
+| 5 | **Vercel Pro** si l'usage devient commercial | Vercel Hobby est réservé à l'usage personnel non commercial | Environ 20 $ US/mois |
+| 6 | **Nom de domaine** ; Site URL et Redirect URLs de Supabase ; domaine Vercel | Adresse stable pour les liens de connexion et l'installation | Environ 20 $/an |
+| 7 | **Région des fonctions serveur** : vérifier si Vercel offre une région au Canada ; sinon, garder `iad1` et le dire dans la politique | Loi 25 : informer de la communication hors Québec | Vérification |
+| 8 | **Protection de l'inscription** (CAPTCHA Turnstile ou hCaptcha dans Supabase Auth) et limites de débit | Éviter les comptes automatisés et l'abus d'envoi de courriels | Gratuit |
+| 9 | **En-tête Content-Security-Policy** et revue des avis de sécurité Supabase | Défense en profondeur | Petit |
+| 10 | **Loi 25** : registre des incidents de confidentialité, procédure de réponse aux demandes (30 jours), règle de conservation des comptes inactifs, mise à jour de la date et retrait de la mention « avant ouverture au public » dans la politique | Obligations de l'entreprise | Rédaction |
+| 11 | **Conditions d'utilisation** (information générale, aucune garde d'argent, aucun conseil personnalisé) | Encadrer l'usage public | Rédaction |
+| 12 | **IA** (si budget) : `ANTHROPIC_API_KEY`, modèles, plafond de dépense dans la console Anthropic, **évaluation des facteurs relatifs à la vie privée (EFVP)** avant d'activer, puis test réel du classement | Communication hors Québec ; code jamais exercé contre la vraie API | Selon l'usage |
+| 13 | **Suivi des erreurs** (journal des fonctions Vercel, éventuellement un service d'erreurs) | Fiabilité avant tout : voir les plantages avant les utilisateurs | Gratuit à petit volume |
+| 14 | **Essais sur vrais appareils** : iPhone (Safari, installation, hors ligne) et Android (Chrome) | La PWA se comporte différemment selon le système | Manuel |
+| 15 | **Première visite plus rapide** si mesurée trop lente en vrai 4G : réduire le JavaScript de l'accueil, précharger les données | Objectif « moins d'une seconde » à la première visite | Moyen |
+| 16 | **Boutiques (plus tard)** : emballage natif (Capacitor) | Présence dans l'App Store et Google Play | Moyen |

@@ -9,6 +9,7 @@ import { prochainNumero, type Facture, type StatutFacture } from "@/domaine/fact
 import { TYPES_COMPTE, type Compte, type TypeCompte } from "@/domaine/placements";
 import type { Priorite, Projet } from "@/domaine/projets";
 import { motifDepuisLibelle, regleApplicable, type RegleCategorie } from "@/domaine/regles";
+import { effacerInstantanes, ecrireInstantane, lireInstantane } from "./cache-local";
 import { schemaProfil, type Profil } from "./profil";
 import { supabaseNavigateur } from "./supabase-navigateur";
 
@@ -25,7 +26,12 @@ export interface Donnees {
   factures: Facture[];
   comptes: Compte[];
   regles: RegleCategorie[];
+  /** Données affichées depuis la copie locale (hors ligne ou en attente du réseau) : date de la copie. */
+  copieDu: string | null;
+  horsLigne: boolean;
 }
+
+type Contenu = Omit<Donnees, "statut" | "copieDu" | "horsLigne">;
 
 const montant = z.union([z.string(), z.number()]).transform((v) => decimalVersCents(v));
 
@@ -136,12 +142,41 @@ const schemaProjet = z
 const COLONNES_TX = "id,date,libelle_brut,marchand,montant,categorie_id,deductible,tps,tvq,recu_chemin,facture_id";
 const PAGE = 1000;
 
-let etat: Donnees = { statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [], comptes: [], regles: [] };
+const VIDE: Donnees = {
+  statut: "vide",
+  profil: null,
+  categories: [],
+  transactions: [],
+  projets: [],
+  factures: [],
+  comptes: [],
+  regles: [],
+  copieDu: null,
+  horsLigne: false,
+};
+let etat: Donnees = VIDE;
+let utilisateur: string | null = null;
+let attenteCopie: ReturnType<typeof setTimeout> | null = null;
 const abonnes = new Set<() => void>();
 const publier = (e: Donnees) => {
   etat = e;
   abonnes.forEach((f) => f());
+  // Après chaque lecture ou écriture réussie, la copie locale suit (regroupée sur 1 s).
+  if (e.statut === "pret" && !e.copieDu && utilisateur) {
+    const id = utilisateur;
+    if (attenteCopie) clearTimeout(attenteCopie);
+    attenteCopie = setTimeout(() => void ecrireInstantane<Contenu>(id, contenu(etat)), 1000);
+  }
 };
+const contenu = (e: Donnees): Contenu => ({
+  profil: e.profil,
+  categories: e.categories,
+  transactions: e.transactions,
+  projets: e.projets,
+  factures: e.factures,
+  comptes: e.comptes,
+  regles: e.regles,
+});
 
 export function useDonnees(): Donnees {
   return useSyncExternalStore(
@@ -216,8 +251,25 @@ async function lireProfil(): Promise<Profil> {
   return schemaProfil.parse(data);
 }
 
-export async function charger(): Promise<void> {
-  if (etat.statut === "vide") publier({ ...etat, statut: "chargement" });
+/**
+ * Charge les données de l'utilisateur. La copie locale s'affiche d'abord (accueil immédiat),
+ * puis le réseau la remplace. Hors ligne, la copie reste affichée avec un avis.
+ */
+export async function charger(idUtilisateur: string): Promise<void> {
+  if (utilisateur !== idUtilisateur) etat = VIDE;
+  utilisateur = idUtilisateur;
+  if (etat.statut === "vide") {
+    publier({ ...etat, statut: "chargement" });
+    const copie = await lireInstantane<Contenu>(idUtilisateur);
+    // etat a pu changer pendant la lecture (déconnexion, autre chargement) : on relit sa valeur courante.
+    if (copie && (etat as Donnees).statut === "chargement") publier({ ...VIDE, ...copie.donnees, statut: "pret", copieDu: copie.enregistreLe });
+  }
+  // Sans réseau, inutile d'attendre les nouvelles tentatives de Supabase : la copie reste affichée.
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    if ((etat as Donnees).statut === "pret") publier({ ...etat, horsLigne: true });
+    else publier({ ...etat, statut: "erreur" });
+    return;
+  }
   try {
     const [profil, categories, transactions, projets, factures, comptes, regles] = await Promise.all([
       lireProfil(),
@@ -228,15 +280,24 @@ export async function charger(): Promise<void> {
       lireComptes(),
       lireRegles(),
     ]);
-    publier({ statut: "pret", profil, categories, transactions, projets, factures, comptes, regles });
+    publier({ statut: "pret", profil, categories, transactions, projets, factures, comptes, regles, copieDu: null, horsLigne: false });
   } catch {
-    publier({ ...etat, statut: etat.statut === "pret" ? "pret" : "erreur" });
+    if (etat.statut === "pret") publier({ ...etat, horsLigne: true });
+    else publier({ ...etat, statut: "erreur" });
     throw new Error("lecture");
   }
 }
 
 export function vider(): void {
-  publier({ statut: "vide", profil: null, categories: [], transactions: [], projets: [], factures: [], comptes: [], regles: [] });
+  if (attenteCopie) clearTimeout(attenteCopie);
+  utilisateur = null;
+  publier(VIDE);
+}
+
+/** Déconnexion : rien ne reste sur l'appareil. */
+export async function oublierAppareil(): Promise<void> {
+  vider();
+  await effacerInstantanes();
 }
 
 async function rechargerTransactions() {

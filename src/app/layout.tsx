@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Source_Sans_3 } from "next/font/google";
 import { T } from "@/textes/fr-CA";
+import { EnregistrementServiceWorker } from "@/ui/service-worker";
 import "./globals.css";
 
 const titre = Manrope({ variable: "--police-titre", subsets: ["latin"], weight: ["600", "700", "800"] });
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
   title: { default: T.app.nom, template: `%s · ${T.app.nom}` },
   description: T.app.description,
   applicationName: T.app.nom,
+  appleWebApp: { capable: true, title: T.app.nom, statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -35,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {T.app.lienEvitement}
         </a>
         {children}
+        <EnregistrementServiceWorker />
       </body>
     </html>
   );

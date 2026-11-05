@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="fr-CA">
+  <body style="font-family: Arial, sans-serif; color: #16201c; max-width: 520px; margin: 0 auto; padding: 24px">
+    <h2 style="margin: 0 0 12px">Bienvenue dans Mes finances</h2>
+    <p>Confirme ton adresse courriel pour créer ton compte.</p>
+    <p style="margin: 24px 0">
+      <a href="{{ .SiteURL }}/auth/confirmer?token_hash={{ .TokenHash }}&type=email"
+         style="background: #0e6b5c; color: #ffffff; padding: 12px 18px; border-radius: 8px; text-decoration: none; font-weight: bold">Confirmer mon courriel</a>
+    </p>
+    <p>Ou entre ce code dans l'application : <strong style="font-size: 20px; letter-spacing: 3px">{{ .Token }}</strong></p>
+    <p style="color: #56645f; font-size: 13px">Tu n'as rien demandé ? Ignore ce courriel : aucun compte ne sera créé.</p>
+  </body>
+</html>

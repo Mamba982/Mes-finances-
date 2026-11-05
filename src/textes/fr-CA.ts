@@ -16,6 +16,7 @@ export const T = {
     reglages: "Réglages",
   },
   connexion: {
+    compteSupprime: "Ton compte et toutes tes données ont été supprimés.",
     titre: "Connexion",
     intro: "Entre ton courriel. Tu recevras un lien de connexion. Aucun mot de passe à retenir.",
     courriel: "Courriel",
@@ -35,6 +36,7 @@ export const T = {
     sansBanque: "Aucune connexion à ta banque : tu importes tes relevés toi-même.",
   },
   session: {
+    horsLigne: (d: string) => `Hors ligne : données du ${d}. Les modifications reprendront au retour du réseau.`,
     chargement: "Chargement…",
     deconnexion: "Me déconnecter",
   },
@@ -526,6 +528,31 @@ export const T = {
     annuler: "Annuler",
     nomVide: "Donne un nom au compte.",
     soldeInvalide: "Le solde est un montant positif ou nul.",
+    suppression: {
+      titre: "Supprimer mon compte",
+      texte:
+        "Efface définitivement ton compte, toutes tes données (transactions, projets, factures, comptes, règles) et les photos de reçus. Télécharge d'abord une copie si tu veux la garder.",
+      champ: "Pour confirmer, tape SUPPRIMER",
+      bouton: "Supprimer définitivement mon compte",
+      enCours: "Suppression…",
+      confirmationInvalide: "Tape SUPPRIMER en majuscules pour confirmer.",
+      indisponible:
+        "La suppression du compte n'est pas configurée sur ce serveur. Écris au responsable indiqué dans la politique de confidentialité.",
+      echec: "La suppression a échoué. Rien n'a été perdu ; réessaie dans un instant.",
+    },
+  },
+  donnees: {
+    titre: "Mes données",
+    intro: "Tes données t'appartiennent. Télécharge-les quand tu veux.",
+    complet: "Tout télécharger (JSON)",
+    transactions: "Transactions (CSV)",
+    projets: "Projets (CSV)",
+    factures: "Factures (CSV)",
+    comptes: "Comptes (CSV)",
+    enCours: "Préparation…",
+    pret: "Fichier téléchargé.",
+    echec: "L'export a échoué. Vérifie ta connexion puis réessaie.",
+    noteCsv: "Les fichiers CSV s'ouvrent dans Excel ou Numbers (séparateur point-virgule).",
   },
   affairesReglages: {
     titre: "Entreprise et frais",

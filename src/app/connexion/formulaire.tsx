@@ -14,10 +14,14 @@ const schemaCourriel = z.email({ error: T.connexion.courrielInvalide }).max(254)
  * Le code à 6 chiffres reviendra quand un SMTP permettra de modifier le modèle (phase 7).
  */
 export function FormulaireConnexion() {
-  const erreurLien = useSearchParams().get("erreur") === "lien";
+  const params = useSearchParams();
+  const erreurLien = params.get("erreur") === "lien";
+  const compteSupprime = params.get("compte") === "supprime";
   const [envoyeA, setEnvoyeA] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
-  const [message, setMessage] = useState<string | null>(erreurLien ? T.connexion.erreurLien : null);
+  const [message, setMessage] = useState<string | null>(
+    erreurLien ? T.connexion.erreurLien : compteSupprime ? T.connexion.compteSupprime : null,
+  );
   const idCourriel = useId();
   const idMessage = useId();
 
