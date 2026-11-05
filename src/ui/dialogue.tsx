@@ -22,9 +22,9 @@ export function Dialogue({ ouvert, titre, onFermer, children }: { ouvert: boolea
       onClick={(e) => {
         if (e.target === ref.current) onFermer();
       }}
-      className="m-0 mt-auto w-full max-w-none rounded-t-2xl bg-surface p-0 text-ink backdrop:bg-black/45 sm:m-auto sm:max-w-xl sm:rounded-2xl"
+      className="fixed inset-x-0 top-auto bottom-0 m-0 max-h-[92dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-2xl bg-surface p-0 text-ink backdrop:bg-black/45 sm:inset-y-0 sm:m-auto sm:max-w-xl sm:rounded-2xl"
     >
-      <div className="max-h-[92dvh] overflow-auto px-4 pt-4 pb-6">
+      <div className="px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <h2 id={idTitre} className="mb-3 text-lg font-bold">
           {titre}
         </h2>

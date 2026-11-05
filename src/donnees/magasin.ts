@@ -5,6 +5,7 @@ import { z } from "zod";
 import { centsVersDecimal, decimalVersCents, type Cents } from "@/domaine/argent";
 import type { Categorie, Transaction, TypeCategorie } from "@/domaine/budget";
 import { normaliserMarchand } from "@/domaine/categorisation";
+import type { Priorite, Projet } from "@/domaine/projets";
 import { schemaProfil, type Profil } from "./profil";
 import { supabaseNavigateur } from "./supabase-navigateur";
 
@@ -17,6 +18,7 @@ export interface Donnees {
   profil: Profil | null;
   categories: Categorie[];
   transactions: Transaction[];
+  projets: Projet[];
 }
 
 const montant = z.union([z.string(), z.number()]).transform((v) => decimalVersCents(v));
@@ -57,10 +59,36 @@ const schemaTransaction = z
     }),
   );
 
+const schemaProjet = z
+  .object({
+    id: z.uuid(),
+    nom: z.string(),
+    cout: montant,
+    montant_depart: montant,
+    echeance: z.string(),
+    priorite: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+    notes: z.string().nullable(),
+    postes_projet: z.array(z.object({ id: z.uuid(), nom: z.string(), montant, explication: z.string().nullable(), ordre: z.number() })),
+    versements: z.array(z.object({ id: z.uuid(), montant, date: z.string(), note: z.string().nullable() })),
+  })
+  .transform(
+    (p): Projet => ({
+      id: p.id,
+      nom: p.nom,
+      cout: p.cout,
+      montantDepart: p.montant_depart,
+      echeance: p.echeance,
+      priorite: p.priorite,
+      notes: p.notes,
+      postes: [...p.postes_projet].sort((a, b) => a.ordre - b.ordre).map(({ id, nom, montant, explication }) => ({ id, nom, montant, explication })),
+      versements: [...p.versements].sort((a, b) => b.date.localeCompare(a.date)),
+    }),
+  );
+
 const COLONNES_TX = "id,date,libelle_brut,marchand,montant,categorie_id,deductible,tps,tvq";
 const PAGE = 1000;
 
-let etat: Donnees = { statut: "vide", profil: null, categories: [], transactions: [] };
+let etat: Donnees = { statut: "vide", profil: null, categories: [], transactions: [], projets: [] };
 const abonnes = new Set<() => void>();
 const publier = (e: Donnees) => {
   etat = e;
@@ -95,13 +123,26 @@ async function lireCategories(): Promise<Categorie[]> {
   return z.array(schemaCategorie).parse(data);
 }
 
+async function lireProjets(): Promise<Projet[]> {
+  const { data, error } = await supabaseNavigateur()
+    .from("projets")
+    .select("id,nom,cout,montant_depart,echeance,priorite,notes,postes_projet(id,nom,montant,explication,ordre),versements(id,montant,date,note)")
+    .order("cree_le");
+  if (error) throw error;
+  return z.array(schemaProjet).parse(data);
+}
+
+async function lireProfil(): Promise<Profil> {
+  const { data, error } = await supabaseNavigateur().from("profils").select("*").single();
+  if (error) throw error;
+  return schemaProfil.parse(data);
+}
+
 export async function charger(): Promise<void> {
   if (etat.statut === "vide") publier({ ...etat, statut: "chargement" });
   try {
-    const sb = supabaseNavigateur();
-    const [p, categories, transactions] = await Promise.all([sb.from("profils").select("*").single(), lireCategories(), lireTransactions()]);
-    if (p.error) throw p.error;
-    publier({ statut: "pret", profil: schemaProfil.parse(p.data), categories, transactions });
+    const [profil, categories, transactions, projets] = await Promise.all([lireProfil(), lireCategories(), lireTransactions(), lireProjets()]);
+    publier({ statut: "pret", profil, categories, transactions, projets });
   } catch {
     publier({ ...etat, statut: etat.statut === "pret" ? "pret" : "erreur" });
     throw new Error("lecture");
@@ -109,7 +150,7 @@ export async function charger(): Promise<void> {
 }
 
 export function vider(): void {
-  publier({ statut: "vide", profil: null, categories: [], transactions: [] });
+  publier({ statut: "vide", profil: null, categories: [], transactions: [], projets: [] });
 }
 
 async function rechargerTransactions() {
@@ -223,4 +264,96 @@ export async function enregistrerCategories(
   const { error } = await sb.from("categories").upsert(lignes);
   if (error) throw error;
   publier({ ...etat, categories: await lireCategories() });
+}
+
+// ---------------------------------------------------------------- projets
+
+export interface SaisieProjet {
+  nom: string;
+  cout: Cents;
+  montantDepart: Cents;
+  echeance: string;
+  priorite: Priorite;
+  notes: string | null;
+}
+
+async function rechargerProjets() {
+  publier({ ...etat, projets: await lireProjets() });
+}
+
+const verifier = (r: { error: unknown }) => {
+  if (r.error) throw r.error;
+};
+
+const ligneProjet = (s: SaisieProjet) => ({
+  nom: s.nom,
+  cout: centsVersDecimal(s.cout),
+  montant_depart: centsVersDecimal(s.montantDepart),
+  echeance: s.echeance,
+  priorite: s.priorite,
+  notes: s.notes,
+});
+
+export async function creerProjet(s: SaisieProjet): Promise<string> {
+  const { data, error } = await supabaseNavigateur().from("projets").insert(ligneProjet(s)).select("id").single();
+  if (error) throw error;
+  await rechargerProjets();
+  return z.object({ id: z.uuid() }).parse(data).id;
+}
+
+export async function modifierProjet(id: string, s: SaisieProjet): Promise<void> {
+  verifier(await supabaseNavigateur().from("projets").update(ligneProjet(s)).eq("id", id));
+  await rechargerProjets();
+}
+
+export async function changerCoutProjet(id: string, cout: Cents): Promise<void> {
+  verifier(await supabaseNavigateur().from("projets").update({ cout: centsVersDecimal(cout) }).eq("id", id));
+  await rechargerProjets();
+}
+
+export async function supprimerProjet(id: string): Promise<void> {
+  verifier(await supabaseNavigateur().from("projets").delete().eq("id", id));
+  publier({ ...etat, projets: etat.projets.filter((p) => p.id !== id) });
+}
+
+export async function ajouterVersement(projetId: string, montant: Cents, date: string): Promise<void> {
+  verifier(await supabaseNavigateur().from("versements").insert({ projet_id: projetId, montant: centsVersDecimal(montant), date }));
+  await rechargerProjets();
+}
+
+export async function supprimerVersement(id: string): Promise<void> {
+  verifier(await supabaseNavigateur().from("versements").delete().eq("id", id));
+  await rechargerProjets();
+}
+
+export async function ajouterPoste(projetId: string, nom: string, montant: Cents, explication: string | null): Promise<void> {
+  const ordre = (etat.projets.find((p) => p.id === projetId)?.postes.length ?? 0) + 1;
+  verifier(
+    await supabaseNavigateur().from("postes_projet").insert({ projet_id: projetId, nom, montant: centsVersDecimal(montant), explication, ordre }),
+  );
+  await rechargerProjets();
+}
+
+export async function supprimerPoste(id: string): Promise<void> {
+  verifier(await supabaseNavigateur().from("postes_projet").delete().eq("id", id));
+  await rechargerProjets();
+}
+
+/** Applique un scénario en une seule opération (fonction SQL appliquer_scenario). */
+export async function appliquerScenario(projets: { id: string; echeance: string; cout: Cents }[], capacite: Cents | null): Promise<void> {
+  verifier(
+    await supabaseNavigateur().rpc("appliquer_scenario", {
+      p_projets: projets.map((p) => ({ id: p.id, echeance: p.echeance, cout: centsVersDecimal(p.cout) })),
+      p_capacite: capacite === null ? null : centsVersDecimal(capacite),
+    }),
+  );
+  const [profil, projetsAJour] = await Promise.all([lireProfil(), lireProjets()]);
+  publier({ ...etat, profil, projets: projetsAJour });
+}
+
+export async function modifierCapacite(mode: "auto" | "manuel", manuelle: Cents): Promise<void> {
+  verifier(
+    await supabaseNavigateur().from("profils").update({ mode_capacite: mode, capacite_manuelle: centsVersDecimal(manuelle) }).not("user_id", "is", null),
+  );
+  publier({ ...etat, profil: await lireProfil() });
 }

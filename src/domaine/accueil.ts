@@ -1,6 +1,7 @@
 import type { Cents } from "./argent";
 import { bilan, type Categorie, type IndexCategories, type Transaction } from "./budget";
 import { ajouterMois, moisDe, type DateISO } from "./dates";
+import type { Repartition } from "./projets";
 import type { Radar } from "./radar";
 
 /**
@@ -8,6 +9,8 @@ import type { Radar } from "./radar";
  * Les éléments liés aux projets (phase 3) et aux factures (phase 4) s'ajoutent ici.
  */
 export type ElementAFaire =
+  | { type: "manque"; ton: "bad"; montant: Cents }
+  | { type: "verser"; ton: "ok"; montant: Cents; projet: string }
   | { type: "aucune-transaction"; ton: "warn" }
   | { type: "a-classer"; ton: "warn"; nombre: number }
   | { type: "budget-depasse"; ton: "warn"; categorie: string; depassement: Cents }
@@ -33,5 +36,17 @@ export function aFaireBudget(entree: {
     if (c.type === "depense" && c.budget > 0 && d > c.budget) liste.push({ type: "budget-depasse", ton: "warn", categorie: c.nom, depassement: d - c.budget });
   }
   if (radar.totalFrais > 0) liste.push({ type: "frais", ton: "warn", total: radar.totalFrais });
+  return liste;
+}
+
+/** Éléments liés aux projets : manque mensuel, puis versements du mois (4 au plus, par priorité). */
+export function aFaireProjets(r: Repartition): ElementAFaire[] {
+  const liste: ElementAFaire[] = [];
+  if (r.ecart < 0) liste.push({ type: "manque", ton: "bad", montant: -r.ecart });
+  r.projets
+    .filter((x) => x.alloue > 0)
+    .sort((a, b) => a.projet.priorite - b.projet.priorite)
+    .slice(0, 4)
+    .forEach((x) => liste.push({ type: "verser", ton: "ok", montant: x.alloue, projet: x.projet.nom }));
   return liste;
 }

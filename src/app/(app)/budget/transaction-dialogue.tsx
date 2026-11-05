@@ -135,7 +135,7 @@ export function DialogueTransaction({
         <p role="status" aria-live="polite" className={message ? "alerte" : "sr-only"}>
           {message}
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="sticky bottom-0 -mx-4 -mb-6 flex flex-wrap gap-2 border-t border-line bg-surface px-4 py-3">
           <button type="submit" className="btn" disabled={occupe}>
             {t.enregistrer}
           </button>

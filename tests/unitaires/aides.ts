@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Categorie, Transaction } from "@/domaine/budget";
+import type { Projet } from "@/domaine/projets";
 import { categorieAuto, normaliserMarchand } from "@/domaine/categorisation";
 
 /** Les 18 catégories par défaut, avec id = code (comme dans le prototype). */
@@ -43,4 +44,26 @@ export function transactionsReleves(): Transaction[] {
     tps: 0,
     tvq: 0,
   }));
+}
+
+export const AUJOURDHUI = "2026-11-04";
+
+/** Les trois projets d'exemple du prototype (montants en cents). */
+export function projetsExemple(): Projet[] {
+  return [
+    {
+      id: "p1", nom: "Fonds d'urgence", cout: 500000, montantDepart: 120000, echeance: "2027-09-04", priorite: 1,
+      notes: "Trois mois de dépenses de base.", postes: [],
+      versements: [{ id: "m1", montant: 30000, date: "2026-10-03", note: "Virement mensuel" }],
+    },
+    {
+      id: "p2", nom: "Formation professionnelle", cout: 380000, montantDepart: 40000, echeance: "2028-01-04", priorite: 2,
+      notes: null, versements: [],
+      postes: [
+        { id: "q1", nom: "Droits de scolarité", montant: 260000, explication: null },
+        { id: "q2", nom: "Livres et matériel", montant: 35000, explication: null },
+      ],
+    },
+    { id: "p3", nom: "Ordinateur portable", cout: 160000, montantDepart: 0, echeance: "2027-05-04", priorite: 3, notes: null, postes: [], versements: [] },
+  ];
 }
