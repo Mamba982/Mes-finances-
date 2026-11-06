@@ -23,7 +23,7 @@ export interface ContexteIa {
  * Déroulé commun des routes /api/ia/* :
  * 1. sans clé : 503, avant toute lecture ou requête externe ;
  * 2. corps validé par Zod ; 3. session (401) ; 4. réglage de l'utilisateur (403) ; 5. limite du jour (429) ;
- * 6. appel au modèle, puis une ligne de journal (jetons), réussite ou échec.
+ * 6. ligne de journal inscrite AVANT l'appel (sinon 503, rien n'est envoyé), puis complétée (jetons, réussite).
  * Le traitement renvoie des données à afficher ou à faire réviser : rien n'est enregistré ici.
  */
 export async function executerIa<S extends z.ZodType>(
@@ -61,16 +61,24 @@ export async function executerIa<S extends z.ZodType>(
   }
 
   const admin = createClient(envPublic.NEXT_PUBLIC_SUPABASE_URL, config.cleSupabase!, { auth: { persistSession: false } });
-  const journal = (succes: boolean, c?: Consommation) =>
-    admin.from("usage_ia").insert({
-      user_id: u.user!.id,
-      jour,
-      route,
-      modele: c?.modele ?? config.modeleComplet,
-      jetons_entree: c?.jetonsEntree ?? 0,
-      jetons_sortie: c?.jetonsSortie ?? 0,
-      succes,
-    });
+  // La demande est inscrite au journal AVANT l'appel : si l'écriture échoue (clé secrète invalide,
+  // base indisponible), l'IA refuse de répondre. Une demande non comptée contournerait la limite du jour.
+  const { data: ligne, error: erreurJournal } = await admin
+    .from("usage_ia")
+    .insert({ user_id: u.user!.id, jour, route, modele: config.modeleComplet!, succes: false })
+    .select("id")
+    .single();
+  if (erreurJournal || !ligne) {
+    console.error(`IA ${route} : journal impossible à écrire :`, erreurJournal?.message);
+    return reponse({ erreur: T.ia.erreurs.indisponible }, 503);
+  }
+  const journal = async (succes: boolean, c?: Consommation) => {
+    const { error } = await admin
+      .from("usage_ia")
+      .update({ modele: c?.modele ?? config.modeleComplet!, jetons_entree: c?.jetonsEntree ?? 0, jetons_sortie: c?.jetonsSortie ?? 0, succes })
+      .eq("id", ligne.id);
+    if (error) console.error(`IA ${route} : jetons non journalisés :`, error.message);
+  };
 
   try {
     const { appelClaude } = await import("./client");
