@@ -14,3 +14,15 @@ export async function compresserImage(fichier: Blob, cote = 1600, qualite = 0.8)
   image.close();
   return new Promise((ok, ko) => canvas.toBlob((b) => (b ? ok(b) : ko(new Error("compression"))), "image/jpeg", qualite));
 }
+
+/** Image prête pour l'IA : compressée, en JPEG, encodée en base64 (sans l'en-tête « data: »). */
+export async function imagePourIa(fichier: Blob): Promise<{ type: "image/jpeg"; donnees: string }> {
+  const b = await compresserImage(fichier);
+  const donnees = await new Promise<string>((ok, ko) => {
+    const r = new FileReader();
+    r.onload = () => ok(String(r.result).split(",")[1] ?? "");
+    r.onerror = () => ko(r.error);
+    r.readAsDataURL(b);
+  });
+  return { type: "image/jpeg", donnees };
+}

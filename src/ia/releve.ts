@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { lireMontant, type Cents } from "@/domaine/argent";
+import { estDateISO } from "@/domaine/dates";
 import { masquerNumeros } from "@/domaine/masquage";
 import type { AppelModele, ContenuModele } from "./appel";
 
@@ -68,14 +69,6 @@ export interface LigneLue {
   montant: Cents;
 }
 
-const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
-function dateValide(s: string): boolean {
-  const m = DATE.exec(s);
-  if (!m) return false;
-  const d = new Date(Date.UTC(+m[1]!, +m[2]! - 1, +m[3]!));
-  return d.getUTCFullYear() === +m[1]! && d.getUTCMonth() === +m[2]! - 1 && d.getUTCDate() === +m[3]!;
-}
-
 /** Convertit la réponse en lignes de relevé ; écarte toute ligne à date ou montant illisible. */
 export function interpreterReleve(r: z.infer<typeof schemaReponseReleve>): { lignes: LigneLue[]; ecartees: number } {
   const lignes: LigneLue[] = [];
@@ -83,7 +76,7 @@ export function interpreterReleve(r: z.infer<typeof schemaReponseReleve>): { lig
   for (const t of r.transactions) {
     const montant = lireMontant(t.montant);
     const libelle = masquerNumeros(t.description.replace(/\s+/g, " ").trim()).slice(0, 300);
-    if (!dateValide(t.date) || montant === null || montant === 0 || !libelle) {
+    if (!estDateISO(t.date) || montant === null || montant === 0 || !libelle) {
       ecartees++;
       continue;
     }

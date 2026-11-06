@@ -13,7 +13,7 @@ import { lireTextePdf } from "@/import/pdf/lire";
 import { importer, useDonnees } from "@/donnees/magasin";
 import { T } from "@/textes/fr-CA";
 import { useIaDisponible } from "@/ui/ia";
-import { compresserImage } from "@/ui/image";
+import { imagePourIa } from "@/ui/image";
 
 const t = T.importer;
 
@@ -38,15 +38,6 @@ const schemaLecture = z.object({
   ecartees: z.number().int().min(0),
 });
 const schemaErreur = z.object({ erreur: z.string() });
-
-function enBase64(b: Blob): Promise<string> {
-  return new Promise((ok, ko) => {
-    const r = new FileReader();
-    r.onload = () => ok(String(r.result).split(",")[1] ?? "");
-    r.onerror = () => ko(r.error);
-    r.readAsDataURL(b);
-  });
-}
 
 export function ImportReleve() {
   const { categories, transactions, profil, regles } = useDonnees();
@@ -141,13 +132,13 @@ export function ImportReleve() {
     if (!image) return;
     const f = image;
     setImage(null);
-    let donnees: string;
+    let img: Awaited<ReturnType<typeof imagePourIa>>;
     try {
-      donnees = await enBase64(await compresserImage(f));
+      img = await imagePourIa(f);
     } catch {
       return setMessage(t.imageIllisible);
     }
-    await lireAvecIa({ source: "image", type: "image/jpeg", donnees }, f.name, "image", t.sourceImage);
+    await lireAvecIa({ source: "image", ...img }, f.name, "image", t.sourceImage);
   }
 
   function lireColle() {

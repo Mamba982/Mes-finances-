@@ -486,6 +486,13 @@ export const T = {
     totalInvalide: "Indique le total payé.",
     taxeInvalide: "Les taxes sont des montants positifs ou vides.",
     photoIllisible: "Cette photo n'a pas pu être lue. Utilise une photo JPEG ou PNG.",
+    lireIa: "Remplir avec l'IA",
+    rappelIa:
+      "Avant l'envoi : recadre ou cache tout numéro de carte ou de compte complet. La photo est envoyée telle quelle à Anthropic, aux États-Unis.",
+    envoyerIa: "Envoyer la photo à l'IA",
+    lectureIa: "L'IA lit le reçu…",
+    prerempli: "Champs remplis par l'IA : vérifie chaque valeur avant d'ajouter.",
+    rienLu: "L'IA n'a rien pu lire sur cette photo. Remplis les champs à la main.",
     altPhoto: (l: string) => `Photo du reçu : ${l}`,
   },
   placements: {

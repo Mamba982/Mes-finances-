@@ -1,30 +1,76 @@
 "use client";
 
-import { useId, useState, type FormEvent } from "react";
-import { lireMontant } from "@/domaine/argent";
+import { useId, useRef, useState, type FormEvent } from "react";
+import { z } from "zod";
+import { centsVersDecimal, lireMontant } from "@/domaine/argent";
 import { estDateISO } from "@/domaine/dates";
 import { ajouterRecu, useDonnees } from "@/donnees/magasin";
 import { T } from "@/textes/fr-CA";
 import { Dialogue } from "@/ui/dialogue";
-import { compresserImage } from "@/ui/image";
+import { useIaDisponible } from "@/ui/ia";
+import { compresserImage, imagePourIa } from "@/ui/image";
 
 const t = T.recu;
 
+const cents = z.number().int().nullable();
+const schemaLu = z.object({
+  recu: z.object({ date: z.string().nullable(), marchand: z.string().nullable(), description: z.string().nullable(), total: cents, tps: cents, tvq: cents }),
+});
+const schemaErreur = z.object({ erreur: z.string() });
+
 /**
- * Saisie d'un reçu à la main, avec photo facultative. La lecture automatique de la photo
- * par l'IA arrive à la phase 6 ; elle préremplira ces mêmes champs, toujours vérifiés ici.
+ * Saisie d'un reçu, avec photo facultative. Si l'IA est activée, elle peut lire la photo et
+ * préremplir ces mêmes champs : ce formulaire est l'écran de revue, rien n'est enregistré avant « Ajouter ».
  */
 export function DialogueRecu({ ouvert, aujourdhui, onFermer }: { ouvert: boolean; aujourdhui: string; onFermer: () => void }) {
-  const { categories } = useDonnees();
+  const { categories, profil } = useDonnees();
   const id = useId();
+  const formulaire = useRef<HTMLFormElement>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [rappel, setRappel] = useState(false);
+  const iaUtilisable = useIaDisponible() && Boolean(profil?.ia_active);
   const depenses = categories.filter((c) => c.type === "depense");
   const affaires = categories.find((c) => c.code === "affaires")?.id ?? "";
 
   function fermer() {
     setMessage(null);
+    setPhoto(null);
+    setRappel(false);
     onFermer();
+  }
+
+  function remplir(nom: string, valeur: string | null) {
+    const champ = formulaire.current?.elements.namedItem(nom);
+    if (valeur !== null && champ instanceof HTMLInputElement) champ.value = valeur;
+  }
+
+  async function lireAvecIa() {
+    if (!photo) return;
+    setRappel(false);
+    setOccupe(true);
+    setMessage(t.lectureIa);
+    try {
+      const r = await fetch("/api/ia/recu", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(await imagePourIa(photo)) });
+      const j: unknown = await r.json().catch(() => null);
+      if (!r.ok) return setMessage(schemaErreur.safeParse(j).data?.erreur ?? T.ia.erreurs.connexion);
+      const v = schemaLu.safeParse(j);
+      if (!v.success) return setMessage(T.ia.erreurs.reponse);
+      const l = v.data.recu;
+      const decimal = (c: number | null) => (c === null ? null : centsVersDecimal(c).replace(".", ","));
+      remplir("date", l.date);
+      remplir("marchand", l.marchand);
+      remplir("description", l.description);
+      remplir("total", decimal(l.total));
+      remplir("tps", decimal(l.tps));
+      remplir("tvq", decimal(l.tvq));
+      setMessage(l.marchand || l.total !== null ? t.prerempli : t.rienLu);
+    } catch {
+      setMessage(T.ia.erreurs.connexion);
+    } finally {
+      setOccupe(false);
+    }
   }
 
   async function soumettre(e: FormEvent<HTMLFormElement>) {
@@ -76,9 +122,32 @@ export function DialogueRecu({ ouvert, aujourdhui, onFermer }: { ouvert: boolean
 
   return (
     <Dialogue ouvert={ouvert} titre={t.titre} onFermer={fermer}>
-      <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
-        {champ("photo", t.photo, { type: "file", accept: "image/jpeg,image/png,image/webp", capture: "environment" })}
+      <form ref={formulaire} onSubmit={soumettre} noValidate className="flex flex-col gap-3">
+        {champ("photo", t.photo, {
+          type: "file",
+          accept: "image/jpeg,image/png,image/webp",
+          capture: "environment",
+          onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPhoto(e.target.files?.[0] ?? null),
+        })}
         <p className="note">{t.notePhoto}</p>
+        {iaUtilisable && photo && !rappel ? (
+          <button type="button" className="btn-sec self-start" disabled={occupe} onClick={() => setRappel(true)}>
+            {t.lireIa}
+          </button>
+        ) : null}
+        {rappel ? (
+          <div className="alerte flex flex-col gap-2 border-warn">
+            <p>{t.rappelIa}</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className="btn" onClick={() => void lireAvecIa()}>
+                {t.envoyerIa}
+              </button>
+              <button type="button" className="btn-sec" onClick={() => setRappel(false)}>
+                {t.annuler}
+              </button>
+            </div>
+          </div>
+        ) : null}
         <div className="grid grid-cols-2 gap-2">
           {champ("date", t.date, { type: "date", defaultValue: aujourdhui })}
           {champ("marchand", t.marchand, { maxLength: 120, required: true })}
