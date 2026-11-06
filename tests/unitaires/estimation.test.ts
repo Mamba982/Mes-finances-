@@ -14,10 +14,11 @@ describe("estimation de projet par l'IA", () => {
   it("le modèle ne donne que quantité et prix : le domaine multiplie ; postes douteux écartés", () => {
     const r = interpreterEstimation({
       postes: [
-        { nom: "Billets d'avion Montréal–Lisbonne", quantite: 2, prixUnitaire: "1 150,00", explication: "Aller-retour en juillet, classe économique." },
-        { nom: "Hébergement", quantite: 13, prixUnitaire: "145.00", explication: "Nuits en appartement." },
-        { nom: "Prix illisible", quantite: 1, prixUnitaire: "selon la saison", explication: "" },
-        { nom: "Quantité absurde", quantite: 0, prixUnitaire: "10", explication: "" },
+        { nom: "Billets d'avion Montréal–Lisbonne", quantite: 2, prixUnitaireDollars: 1150, explication: "Aller-retour en juillet, classe économique." },
+        { nom: "Hébergement", quantite: 13, prixUnitaireDollars: 145, explication: "Nuits en appartement." },
+        { nom: "Prix négatif", quantite: 1, prixUnitaireDollars: -20, explication: "" },
+        { nom: "Prix illisible", quantite: 1, prixUnitaireDollars: Number.NaN, explication: "" },
+        { nom: "Quantité absurde", quantite: 0, prixUnitaireDollars: 10, explication: "" },
       ],
     });
     expect(r).toEqual([
