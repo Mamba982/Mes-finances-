@@ -41,6 +41,9 @@ const SYSTEME = [
   "Tu classes des transactions bancaires canadiennes dans les catégories permises.",
   "Un montant positif est une entrée d'argent, un montant négatif une sortie.",
   "Pour chaque transaction, donne son numéro i et l'id d'une catégorie permise.",
+  "Classe selon l'activité principale du commerçant, pas selon un mot isolé de son nom.",
+  "La catégorie d'épargne sert seulement aux dépôts vers l'épargne ou les placements (CELI, REER, compte épargne).",
+  "Un paiement de carte de crédit ou un virement entre comptes n'est ni une dépense ni de l'épargne : mets \"inconnu\".",
   'Mets "inconnu" si tu n\'es pas raisonnablement sûr. N\'invente aucune catégorie.',
 ].join("\n");
 
