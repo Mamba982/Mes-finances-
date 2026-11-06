@@ -11,7 +11,7 @@ export default function Confidentialite() {
   return (
     <main id="contenu" className="mx-auto max-w-2xl px-4 py-10 leading-relaxed">
       <h1 className="text-2xl font-extrabold">Politique de confidentialité</h1>
-      <p className="note mt-1">En vigueur le 5 novembre 2026. Application en usage personnel, avant ouverture au public.</p>
+      <p className="note mt-1">En vigueur le 6 novembre 2026. Application en usage personnel, avant ouverture au public.</p>
 
       <h2 className={titre}>Responsable de la protection des renseignements personnels</h2>
       <p className="mt-2">
@@ -41,8 +41,14 @@ export default function Confidentialite() {
         </li>
         <li>Sur ton appareil : une copie des données déjà vues, pour l&apos;affichage rapide et hors ligne. Elle est effacée quand tu te déconnectes.</li>
         <li>
-          Intelligence artificielle : désactivée. Si elle est un jour proposée, elle restera facultative ; tu devras l&apos;activer
-          toi-même, et l&apos;écran indiquera alors que les textes envoyés sont traités par Anthropic, aux États-Unis.
+          Intelligence artificielle (Anthropic, États-Unis) : facultative et éteinte par défaut. Tu l&apos;actives toi-même dans
+          les réglages. Ensuite, rien n&apos;est envoyé sans une action de ta part : classer des transactions (date, description et
+          montant), lire un relevé PDF ou une capture d&apos;écran, lire un reçu, estimer un projet, ou poser une question à
+          l&apos;assistant (ta question et un résumé de tes chiffres : capacité d&apos;épargne, totaux par catégorie, projets, noms et
+          soldes des comptes). Les numéros de compte et de carte sont masqués dans les textes avant l&apos;envoi ; ils ne peuvent pas
+          l&apos;être dans une image, d&apos;où le rappel de les cacher avant l&apos;envoi. Anthropic n&apos;utilise pas ces données
+          pour entraîner ses modèles. L&apos;application ne garde ni les textes ni les images envoyés : seulement, pour la limite
+          quotidienne, la date, la fonction utilisée et le nombre de jetons de chaque demande.
         </li>
       </ul>
 

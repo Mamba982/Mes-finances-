@@ -22,7 +22,10 @@ Application téléphonique (PWA) de finances personnelles pour le Québec et le 
 - Pages statiques + données lues dans le navigateur par `supabase-js`. **La RLS est la frontière de sécurité**, pas la garde de session.
 - Règles métier = fonctions pures dans `src/domaine/` (aucun accès réseau, aucune date système implicite : la date du jour est un paramètre).
 - Classement des transactions : règles de l'utilisateur (`src/domaine/regles.ts`) puis règles par défaut du prototype. Pas de dépendance à l'IA.
-- IA facultative et éteinte : sans `ANTHROPIC_API_KEY`, `/api/ia/*` répond 503 avant toute requête externe. L'utilisateur doit aussi l'activer dans les réglages (Loi 25).
+- IA facultative : sans `ANTHROPIC_API_KEY`, `/api/ia/*` répond 503 avant toute requête externe. L'utilisateur doit aussi l'activer dans les réglages (Loi 25, éteinte par défaut). Routes par `executerIa()` (`src/ia/route.ts`) : 503, 400, 401, 403, 429 (30/jour), journal des jetons.
+- Modèles : `ANTHROPIC_MODEL` (Sonnet 5.5 : relevés, images, reçus, estimation, assistant) et `ANTHROPIC_MODEL_RAPIDE` (Haiku 5.5 : classement). Sorties structurées + revalidation Zod.
+- Minimisation : `masquerNumeros()` sur tout texte avant l'envoi ; PDF lus en texte sur l'appareil (pdf.js) ; images envoyées telles quelles après un rappel.
+- Tout montant lu ou proposé par l'IA passe par un écran de revue avant l'enregistrement.
 - Le modèle d'IA ne calcule jamais : il extrait ou classe ; les calculs sont dans `src/domaine/`. Toute réponse IA passe par un schéma Zod ; invalide → message d'erreur, rien n'est enregistré.
 - Clés secrètes (Anthropic, Supabase secrète) : serveur seulement (`import "server-only"`), jamais `NEXT_PUBLIC_`.
 - Next 16 : lire `node_modules/next/dist/docs/` avant d'utiliser une API (voir AGENTS.md).
@@ -45,6 +48,7 @@ eval "$(bash scripts/db-test.sh)"    # Postgres local pour les tests RLS (export
 npm test                             # unitaires + RLS
 npm run test:e2e                     # Playwright : e2e + parité prototype (faire npm run build avant)
 NODE_USE_ENV_PROXY=1 npm run test:e2e  # dans le conteneur infonuagique (fetch de Node via le mandataire)
+IA_URL=https://mes-finances-phi.vercel.app NODE_USE_ENV_PROXY=1 npm run test:ia  # vraie API à travers le déploiement (≈ 0,07 $ US)
 npm run build && npm run lint
 npx tsc --noEmit
 ```

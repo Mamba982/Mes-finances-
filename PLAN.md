@@ -353,11 +353,27 @@ mes-finances/
 
 ## 6. État à la livraison (phase 7, 2026-11-05) et passage au public
 
-**Usage personnel (aujourd'hui)** : Supabase gratuit (ca-central-1), envoi de courriels intégré de Supabase (modèles en anglais, lien à ouvrir dans le même navigateur), Vercel Hobby, IA éteinte, responsable de la protection des renseignements personnels : Jonathan Mboko.
+**Usage personnel (aujourd'hui)** : Supabase gratuit (ca-central-1), envoi de courriels intégré de Supabase (modèles en anglais, lien à ouvrir dans le même navigateur), Vercel Hobby, IA facultative (clé configurée le 2026-11-06, éteinte par défaut pour chaque utilisateur), responsable de la protection des renseignements personnels : Jonathan Mboko.
 
 **Production** : https://mes-finances-phi.vercel.app (projet Vercel `mes-finances`, relié à `Mamba982/Mes-finances-` : chaque poussée sur `main` redéploie ; fonctions en `iad1`). Variables : `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (publiques) ; `SUPABASE_SECRET_KEY` à saisir dans Vercel par le propriétaire (type « Sensitive »), sans quoi la suppression du compte répond « indisponible ». Supabase : Site URL = l'adresse de production, Redirect URLs = `https://mes-finances-phi.vercel.app/auth/confirmer` (plus `http://localhost:3000/auth/confirmer` pour le développement).
 
 **Mesures** : accueil à la visite suivante en 4G lente simulée (150 ms, 1,6 Mb/s) : environ 190 ms (copie locale + service worker). Première visite sans cache, du lien de connexion à l'accueil rempli : environ 3,1 s dans les mêmes conditions. L'objectif « moins d'une seconde » est donc atteint pour les visites suivantes seulement.
+
+### IA en service (2026-11-06) : coûts mesurés contre la vraie API
+
+Mesures sur les données fictives du dépôt, à travers la production (journal `usage_ia`, tarifs de `src/ia/cout.ts`) :
+
+| Fonction | Modèle | Jetons entrée / sortie | Durée | Coût mesuré | Estimation |
+|---|---|---|---|---|---|
+| Classement de 20 transactions | Haiku 5.5, sans réflexion | 2 485 / 718 | 3,9 s | 0,0006 $ US | — |
+| Relevé PDF de 5 pages (110 transactions, toutes justes) | Sonnet 5.5, effort bas | 5 575 / 4 478 | 32 s | 0,056 $ US | 0,05 $ (× 1,1) |
+| Question à l'assistant | Sonnet 5.5, effort bas | 1 523 / 341 | 4,4 s | 0,0065 $ US | 0,025 $ (× 0,26) |
+| Reçu (photo) | Sonnet 5.5 | 1 035 / 90 | 5,4 s | 0,003 $ US | — |
+| Estimation d'un projet (8 postes) | Sonnet 5.5 | 750 / 607 | 6,4 s | 0,0076 $ US | — |
+
+Aucun coût ne dépasse le double de l'estimation : l'assistant reste sur Sonnet. Avec le plafond de 10 $ US par mois : environ 175 relevés PDF de 5 pages, ou 1 500 questions. La sortie domine le coût d'un relevé (≈ 40 jetons par transaction).
+
+Corrections faites après les essais réels : consigne de classement (activité du commerçant ; paiement de carte et virement ≠ épargne) ; « Dépenses d'entreprise » retirée des choix de l'IA (déductibilité) ; prix unitaire de l'estimation en nombre imposé par le schéma.
 
 ### Ce qui changera au passage au public
 
@@ -374,7 +390,7 @@ mes-finances/
 | 9 | **En-tête Content-Security-Policy** et revue des avis de sécurité Supabase | Défense en profondeur | Petit |
 | 10 | **Loi 25** : registre des incidents de confidentialité, procédure de réponse aux demandes (30 jours), règle de conservation des comptes inactifs, mise à jour de la date et retrait de la mention « avant ouverture au public » dans la politique | Obligations de l'entreprise | Rédaction |
 | 11 | **Conditions d'utilisation** (information générale, aucune garde d'argent, aucun conseil personnalisé) | Encadrer l'usage public | Rédaction |
-| 12 | **IA** (si budget) : `ANTHROPIC_API_KEY`, modèles, plafond de dépense dans la console Anthropic, **évaluation des facteurs relatifs à la vie privée (EFVP)** avant d'activer, puis test réel du classement | Communication hors Québec ; code jamais exercé contre la vraie API | Selon l'usage |
+| 12 | **IA** : **évaluation des facteurs relatifs à la vie privée (EFVP)** avant d'ouvrir l'IA à d'autres personnes ; vérifier la durée de conservation des données chez Anthropic et l'écrire dans la politique ; plafond de dépense ajusté au nombre d'utilisateurs (limite de 30 demandes par jour et par personne) | Communication hors Québec (Loi 25, art. 17) | Selon l'usage |
 | 13 | **Suivi des erreurs** (journal des fonctions Vercel, éventuellement un service d'erreurs) | Fiabilité avant tout : voir les plantages avant les utilisateurs | Gratuit à petit volume |
 | 14 | **Essais sur vrais appareils** : iPhone (Safari, installation, hors ligne) et Android (Chrome) | La PWA se comporte différemment selon le système | Manuel |
 | 15 | **Première visite plus rapide** si mesurée trop lente en vrai 4G : réduire le JavaScript de l'accueil, précharger les données | Objectif « moins d'une seconde » à la première visite | Moyen |
