@@ -48,3 +48,4 @@ next-env.d.ts
 # copies de sauvegarde
 *.bundle
 /mes-finances-/
+/public/pdf.worker.min.mjs

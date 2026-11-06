@@ -1,0 +1,552 @@
+[
+ {
+  "date": "2026-08-01",
+  "libelle": "RESTAURANT CHEZ LÉO",
+  "montant": -13295
+ },
+ {
+  "date": "2026-08-01",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -17767
+ },
+ {
+  "date": "2026-08-02",
+  "libelle": "DEPOT PAIE EMPLOYEUR ABC INC",
+  "montant": 174098
+ },
+ {
+  "date": "2026-08-03",
+  "libelle": "PHARMAPRIX 0345",
+  "montant": -4095
+ },
+ {
+  "date": "2026-08-04",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -5957
+ },
+ {
+  "date": "2026-08-04",
+  "libelle": "VIDEOTRON LTEE",
+  "montant": -25225
+ },
+ {
+  "date": "2026-08-05",
+  "libelle": "AMAZON.CA MARKETPLACE",
+  "montant": -17084
+ },
+ {
+  "date": "2026-08-06",
+  "libelle": "PETRO-CANADA 8812",
+  "montant": -6708
+ },
+ {
+  "date": "2026-08-07",
+  "libelle": "DOLLARAMA #1234 LAVAL",
+  "montant": -22786
+ },
+ {
+  "date": "2026-08-07",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 201155
+ },
+ {
+  "date": "2026-08-08",
+  "libelle": "SPOTIFY P1A2B3",
+  "montant": -7329
+ },
+ {
+  "date": "2026-08-09",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 58188
+ },
+ {
+  "date": "2026-08-10",
+  "libelle": "DEPOT PAIE EMPLOYEUR ABC INC",
+  "montant": 223371
+ },
+ {
+  "date": "2026-08-10",
+  "libelle": "DEPOT PAIE EMPLOYEUR ABC INC",
+  "montant": 70707
+ },
+ {
+  "date": "2026-08-11",
+  "libelle": "PETRO-CANADA 8812",
+  "montant": -16538
+ },
+ {
+  "date": "2026-08-12",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -7026
+ },
+ {
+  "date": "2026-08-13",
+  "libelle": "PHARMAPRIX 0345",
+  "montant": -19509
+ },
+ {
+  "date": "2026-08-13",
+  "libelle": "VIDEOTRON LTEE",
+  "montant": -13215
+ },
+ {
+  "date": "2026-08-14",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -14732
+ },
+ {
+  "date": "2026-08-15",
+  "libelle": "PHARMAPRIX 0345",
+  "montant": -16586
+ },
+ {
+  "date": "2026-08-16",
+  "libelle": "AMAZON.CA MARKETPLACE",
+  "montant": -21640
+ },
+ {
+  "date": "2026-08-16",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 91398
+ },
+ {
+  "date": "2026-08-17",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 127026
+ },
+ {
+  "date": "2026-08-18",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -3786
+ },
+ {
+  "date": "2026-08-19",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 102183
+ },
+ {
+  "date": "2026-08-19",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -12517
+ },
+ {
+  "date": "2026-08-20",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -4152
+ },
+ {
+  "date": "2026-08-21",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -6322
+ },
+ {
+  "date": "2026-08-22",
+  "libelle": "PETRO-CANADA 8812",
+  "montant": -15656
+ },
+ {
+  "date": "2026-08-22",
+  "libelle": "AMAZON.CA MARKETPLACE",
+  "montant": -14916
+ },
+ {
+  "date": "2026-08-23",
+  "libelle": "DEPOT PAIE EMPLOYEUR ABC INC",
+  "montant": 159422
+ },
+ {
+  "date": "2026-08-24",
+  "libelle": "RESTAURANT CHEZ LÉO",
+  "montant": -2520
+ },
+ {
+  "date": "2026-08-25",
+  "libelle": "VIDEOTRON LTEE",
+  "montant": -2295
+ },
+ {
+  "date": "2026-08-25",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -24701
+ },
+ {
+  "date": "2026-08-26",
+  "libelle": "STM CARTE OPUS",
+  "montant": -20654
+ },
+ {
+  "date": "2026-08-27",
+  "libelle": "STM CARTE OPUS",
+  "montant": -10851
+ },
+ {
+  "date": "2026-08-28",
+  "libelle": "DOLLARAMA #1234 LAVAL",
+  "montant": -948
+ },
+ {
+  "date": "2026-09-01",
+  "libelle": "TIM HORTONS #4512",
+  "montant": -9191
+ },
+ {
+  "date": "2026-09-01",
+  "libelle": "PHARMAPRIX 0345",
+  "montant": -25155
+ },
+ {
+  "date": "2026-09-02",
+  "libelle": "COSTCO WHOLESALE #503",
+  "montant": -9792
+ },
+ {
+  "date": "2026-09-03",
+  "libelle": "PETRO-CANADA 8812",
+  "montant": -16041
+ },
+ {
+  "date": "2026-09-04",
+  "libelle": "COSTCO WHOLESALE #503",
+  "montant": -863
+ },
+ {
+  "date": "2026-09-04",
+  "libelle": "DEPOT PAIE EMPLOYEUR ABC INC",
+  "montant": 127789
+ },
+ {
+  "date": "2026-09-05",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 80768
+ },
+ {
+  "date": "2026-09-06",
+  "libelle": "HYDRO-QUEBEC",
+  "montant": -13546
+ },
+ {
+  "date": "2026-09-07",
+  "libelle": "DEPOT PAIE EMPLOYEUR ABC INC",
+  "montant": 163165
+ },
+ {
+  "date": "2026-09-07",
+  "libelle": "SPOTIFY P1A2B3",
+  "montant": -10738
+ },
+ {
+  "date": "2026-09-08",
+  "libelle": "STM CARTE OPUS",
+  "montant": -582
+ },
+ {
+  "date": "2026-09-09",
+  "libelle": "PETRO-CANADA 8812",
+  "montant": -13807
+ },
+ {
+  "date": "2026-09-10",
+  "libelle": "VIDEOTRON LTEE",
+  "montant": -24999
+ },
+ {
+  "date": "2026-09-10",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 157239
+ },
+ {
+  "date": "2026-09-11",
+  "libelle": "DOLLARAMA #1234 LAVAL",
+  "montant": -24133
+ },
+ {
+  "date": "2026-09-12",
+  "libelle": "RESTAURANT CHEZ LÉO",
+  "montant": -15183
+ },
+ {
+  "date": "2026-09-13",
+  "libelle": "DOLLARAMA #1234 LAVAL",
+  "montant": -2699
+ },
+ {
+  "date": "2026-09-13",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 170514
+ },
+ {
+  "date": "2026-09-14",
+  "libelle": "SPOTIFY P1A2B3",
+  "montant": -19808
+ },
+ {
+  "date": "2026-09-15",
+  "libelle": "HYDRO-QUEBEC",
+  "montant": -21973
+ },
+ {
+  "date": "2026-09-16",
+  "libelle": "PETRO-CANADA 8812",
+  "montant": -3501
+ },
+ {
+  "date": "2026-09-16",
+  "libelle": "SPOTIFY P1A2B3",
+  "montant": -1991
+ },
+ {
+  "date": "2026-09-17",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -8864
+ },
+ {
+  "date": "2026-09-18",
+  "libelle": "AMAZON.CA MARKETPLACE",
+  "montant": -13000
+ },
+ {
+  "date": "2026-09-19",
+  "libelle": "DOLLARAMA #1234 LAVAL",
+  "montant": -2570
+ },
+ {
+  "date": "2026-09-19",
+  "libelle": "PHARMAPRIX 0345",
+  "montant": -11504
+ },
+ {
+  "date": "2026-09-20",
+  "libelle": "SAQ SELECTION 23045",
+  "montant": -1039
+ },
+ {
+  "date": "2026-09-21",
+  "libelle": "SAQ SELECTION 23045",
+  "montant": -23688
+ },
+ {
+  "date": "2026-09-22",
+  "libelle": "RESTAURANT CHEZ LÉO",
+  "montant": -15828
+ },
+ {
+  "date": "2026-09-22",
+  "libelle": "PHARMAPRIX 0345",
+  "montant": -11816
+ },
+ {
+  "date": "2026-09-23",
+  "libelle": "PHARMAPRIX 0345",
+  "montant": -6093
+ },
+ {
+  "date": "2026-09-24",
+  "libelle": "STM CARTE OPUS",
+  "montant": -2636
+ },
+ {
+  "date": "2026-09-25",
+  "libelle": "PETRO-CANADA 8812",
+  "montant": -25068
+ },
+ {
+  "date": "2026-09-25",
+  "libelle": "HYDRO-QUEBEC",
+  "montant": -6079
+ },
+ {
+  "date": "2026-09-26",
+  "libelle": "AMAZON.CA MARKETPLACE",
+  "montant": -7506
+ },
+ {
+  "date": "2026-09-27",
+  "libelle": "AMAZON.CA MARKETPLACE",
+  "montant": -22428
+ },
+ {
+  "date": "2026-09-28",
+  "libelle": "VIDEOTRON LTEE",
+  "montant": -1903
+ },
+ {
+  "date": "2026-10-01",
+  "libelle": "PHARMAPRIX 0345",
+  "montant": -19487
+ },
+ {
+  "date": "2026-10-01",
+  "libelle": "HYDRO-QUEBEC",
+  "montant": -6334
+ },
+ {
+  "date": "2026-10-02",
+  "libelle": "DEPOT PAIE EMPLOYEUR ABC INC",
+  "montant": 219083
+ },
+ {
+  "date": "2026-10-03",
+  "libelle": "TIM HORTONS #4512",
+  "montant": -1095
+ },
+ {
+  "date": "2026-10-04",
+  "libelle": "STM CARTE OPUS",
+  "montant": -4812
+ },
+ {
+  "date": "2026-10-04",
+  "libelle": "SPOTIFY P1A2B3",
+  "montant": -6331
+ },
+ {
+  "date": "2026-10-05",
+  "libelle": "DEPOT PAIE EMPLOYEUR ABC INC",
+  "montant": 97136
+ },
+ {
+  "date": "2026-10-06",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -5298
+ },
+ {
+  "date": "2026-10-07",
+  "libelle": "PETRO-CANADA 8812",
+  "montant": -1408
+ },
+ {
+  "date": "2026-10-07",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 51675
+ },
+ {
+  "date": "2026-10-08",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 62913
+ },
+ {
+  "date": "2026-10-09",
+  "libelle": "AMAZON.CA MARKETPLACE",
+  "montant": -5140
+ },
+ {
+  "date": "2026-10-10",
+  "libelle": "DEPOT PAIE EMPLOYEUR ABC INC",
+  "montant": 107270
+ },
+ {
+  "date": "2026-10-10",
+  "libelle": "COSTCO WHOLESALE #503",
+  "montant": -14042
+ },
+ {
+  "date": "2026-10-11",
+  "libelle": "COSTCO WHOLESALE #503",
+  "montant": -17616
+ },
+ {
+  "date": "2026-10-12",
+  "libelle": "AMAZON.CA MARKETPLACE",
+  "montant": -17076
+ },
+ {
+  "date": "2026-10-13",
+  "libelle": "COSTCO WHOLESALE #503",
+  "montant": -8102
+ },
+ {
+  "date": "2026-10-13",
+  "libelle": "RESTAURANT CHEZ LÉO",
+  "montant": -20093
+ },
+ {
+  "date": "2026-10-14",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -10107
+ },
+ {
+  "date": "2026-10-15",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -2122
+ },
+ {
+  "date": "2026-10-16",
+  "libelle": "FRAIS MENSUELS FORFAIT",
+  "montant": -14227
+ },
+ {
+  "date": "2026-10-16",
+  "libelle": "RESTAURANT CHEZ LÉO",
+  "montant": -22729
+ },
+ {
+  "date": "2026-10-17",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 200223
+ },
+ {
+  "date": "2026-10-18",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 58986
+ },
+ {
+  "date": "2026-10-19",
+  "libelle": "COSTCO WHOLESALE #503",
+  "montant": -10306
+ },
+ {
+  "date": "2026-10-19",
+  "libelle": "MAXI #8812 QUEBEC",
+  "montant": -12123
+ },
+ {
+  "date": "2026-10-20",
+  "libelle": "HYDRO-QUEBEC",
+  "montant": -15646
+ },
+ {
+  "date": "2026-10-21",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 171449
+ },
+ {
+  "date": "2026-10-22",
+  "libelle": "HYDRO-QUEBEC",
+  "montant": -899
+ },
+ {
+  "date": "2026-10-22",
+  "libelle": "VIREMENT INTERAC REÇU",
+  "montant": 151728
+ },
+ {
+  "date": "2026-10-23",
+  "libelle": "VIDEOTRON LTEE",
+  "montant": -4369
+ },
+ {
+  "date": "2026-10-24",
+  "libelle": "TIM HORTONS #4512",
+  "montant": -757
+ },
+ {
+  "date": "2026-10-25",
+  "libelle": "TIM HORTONS #4512",
+  "montant": -17937
+ },
+ {
+  "date": "2026-10-25",
+  "libelle": "DOLLARAMA #1234 LAVAL",
+  "montant": -4381
+ },
+ {
+  "date": "2026-10-26",
+  "libelle": "HYDRO-QUEBEC",
+  "montant": -3555
+ },
+ {
+  "date": "2026-10-27",
+  "libelle": "TIM HORTONS #4512",
+  "montant": -394
+ }
+]
