@@ -57,7 +57,7 @@ test.describe("classement par règles, sans IA", () => {
       // IA : non configurée sur ce serveur, réglage grisé, routes fermées sans appel externe
       await page.goto("/reglages");
       await expect(page.getByText(/L'IA n'est pas configurée sur ce serveur/)).toBeVisible();
-      await expect(page.getByLabel("Utiliser l'IA pour classer les transactions restantes")).toBeDisabled();
+      await expect(page.getByLabel("Utiliser l'IA (facultatif)")).toBeDisabled();
       await sansTexteAnglais(page);
       await accessible(page);
       expect(await (await page.request.get("/api/ia/etat")).json()).toEqual({ disponible: false });

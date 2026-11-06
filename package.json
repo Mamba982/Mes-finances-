@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:rls": "vitest run --project rls",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:ia": "playwright test --config playwright.ia.config.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.3.0",

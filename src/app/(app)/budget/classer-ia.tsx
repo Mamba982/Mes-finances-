@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { z } from "zod";
+import { masquerNumeros } from "@/domaine/masquage";
 import { classerLot, useDonnees } from "@/donnees/magasin";
 import { MAX_TRANSACTIONS } from "@/ia/categoriser";
 import { T } from "@/textes/fr-CA";
@@ -29,7 +30,10 @@ export function ClasserAvecIa() {
       const r = await fetch("/api/ia/categoriser", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transactions: aClasser.map((t) => ({ id: t.id, libelle: t.libelle, montant: t.montant })) }),
+        // Numéros masqués dès l'appareil : seuls la date, le libellé masqué et le montant partent.
+        body: JSON.stringify({
+          transactions: aClasser.map((t) => ({ id: t.id, date: t.date, libelle: masquerNumeros(t.libelle), montant: t.montant })),
+        }),
       });
       const j: unknown = await r.json().catch(() => null);
       if (!r.ok) return setMessage(schemaErreur.safeParse(j).data?.erreur ?? T.ia.erreurs.connexion);

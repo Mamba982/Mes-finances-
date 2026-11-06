@@ -23,11 +23,13 @@ export function configIa() {
     SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY || undefined,
   });
   const modeleRapide = e.ANTHROPIC_MODEL_RAPIDE ?? e.ANTHROPIC_MODEL;
+  const modeleComplet = e.ANTHROPIC_MODEL ?? e.ANTHROPIC_MODEL_RAPIDE;
   return {
     // Le journal des jetons (usage_ia) s'écrit avec la clé secrète : sans elle, pas d'IA non plus.
-    disponible: Boolean(e.ANTHROPIC_API_KEY && modeleRapide && e.SUPABASE_SECRET_KEY),
+    disponible: Boolean(e.ANTHROPIC_API_KEY && modeleRapide && modeleComplet && e.SUPABASE_SECRET_KEY),
     cle: e.ANTHROPIC_API_KEY,
     modeleRapide,
+    modeleComplet,
     limite: e.IA_LIMITE_QUOTIDIENNE,
     cleSupabase: e.SUPABASE_SECRET_KEY,
   };

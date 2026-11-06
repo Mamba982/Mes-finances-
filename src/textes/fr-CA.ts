@@ -328,9 +328,9 @@ export const T = {
     titre: "Intelligence artificielle",
     nonConfiguree:
       "L'IA n'est pas configurée sur ce serveur. Le classement par règles fonctionne sans elle ; rien n'est envoyé hors de l'application.",
-    activer: "Utiliser l'IA pour classer les transactions restantes",
+    activer: "Utiliser l'IA (facultatif)",
     consentement:
-      "En l'activant, les descriptions et montants des transactions à classer sont envoyés à Anthropic, aux États-Unis, à chaque demande. Tu peux la désactiver à tout moment.",
+      "En l'activant, ce que tu soumets à l'IA est envoyé à Anthropic, aux États-Unis, à chaque demande : la date, la description et le montant des transactions à classer, les relevés PDF, captures d'écran et reçus que tu choisis de faire lire, et tes questions à l'assistant. Les numéros de compte et de carte sont masqués dans les textes avant l'envoi ; ils ne peuvent pas l'être dans une image. Anthropic n'utilise pas ces données pour entraîner ses modèles. Rien n'est envoyé sans une action de ta part, et tu peux désactiver l'IA à tout moment.",
     enregistre: "Réglage enregistré.",
     classerAvecIa: (n: number) => `Classer ${n} avec l'IA`,
     enCours: "Classement…",
@@ -340,6 +340,10 @@ export const T = {
       indisponible: "L'IA n'est pas disponible sur ce serveur.",
       desactivee: "L'IA est désactivée dans tes réglages.",
       limite: "Limite quotidienne de demandes à l'IA atteinte. Réessaie demain.",
+      limiteAtteinte: (n: number) =>
+        `Tu as utilisé tes ${n} demandes à l'IA aujourd'hui. Réessaie demain. Tout le reste de l'application fonctionne sans l'IA.`,
+      demande: "Demande invalide. Rien n'a été envoyé à l'IA.",
+      refus: "L'IA a refusé de traiter cette demande. Rien n'a été modifié.",
       reponse: "L'IA a renvoyé une réponse illisible. Rien n'a été modifié.",
       connexion: "L'IA n'a pas pu répondre. Réessaie ou classe à la main.",
       session: "Ta session a expiré. Reconnecte-toi.",

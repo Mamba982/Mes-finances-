@@ -1,9 +1,12 @@
 import { z } from "zod";
+import { centsVersDecimal } from "@/domaine/argent";
+import { masquerNumeros } from "@/domaine/masquage";
+import type { AppelModele } from "./appel";
 
 /**
- * Classement des transactions restantes par l'IA. Le modèle choisit seulement une catégorie
- * parmi celles de l'utilisateur ; il ne calcule rien. Sa réponse est validée par Zod :
- * une réponse invalide est rejetée en entier, rien n'est appliqué.
+ * Classement par l'IA des transactions qu'aucune règle n'a reconnues. Le modèle choisit seulement
+ * une catégorie parmi celles de l'utilisateur ; il ne calcule rien. Seuls la date, le libellé
+ * (numéros masqués) et le montant sont envoyés. Une réponse hors schéma est rejetée en entier.
  */
 
 export const MAX_TRANSACTIONS = 120;
@@ -13,6 +16,7 @@ export const schemaDemande = z.object({
     .array(
       z.object({
         id: z.uuid(),
+        date: z.iso.date(),
         libelle: z.string().min(1).max(300),
         montant: z.number().int(), // cents
       }),
@@ -30,57 +34,43 @@ export interface CategoriePermise {
 
 /** Réponse attendue : un objet par transaction, indice dans la liste envoyée et id de catégorie ou « inconnu ». */
 export const schemaReponse = z.object({
-  resultats: z.array(z.object({ i: z.number().int().min(0), categorie: z.string().min(1) })),
+  resultats: z.array(z.object({ i: z.number().int(), categorie: z.string() })),
 });
 
-export class ReponseIaInvalide extends Error {}
+const SYSTEME = [
+  "Tu classes des transactions bancaires canadiennes dans les catégories permises.",
+  "Un montant positif est une entrée d'argent, un montant négatif une sortie.",
+  "Pour chaque transaction, donne son numéro i et l'id d'une catégorie permise.",
+  'Mets "inconnu" si tu n\'es pas raisonnablement sûr. N\'invente aucune catégorie.',
+].join("\n");
 
-export function construireConsigne(categories: readonly CategoriePermise[], d: DemandeCategorisation): { systeme: string; message: string } {
-  const systeme = [
-    "Tu classes des transactions bancaires canadiennes dans les catégories permises.",
-    "Un montant positif est une entrée d'argent, négatif une sortie (montants en cents).",
-    'Réponds UNIQUEMENT avec un objet JSON : {"resultats":[{"i":numéro,"categorie":"id"}]}.',
-    'Mets "inconnu" si tu n\'es pas raisonnablement sûr. N\'invente aucune catégorie.',
-  ].join("\n");
-  const message = JSON.stringify({
+export function construireConsigne(categories: readonly CategoriePermise[], d: DemandeCategorisation): { systeme: string; contenu: string } {
+  const contenu = JSON.stringify({
     categories: categories.map((c) => ({ id: c.id, nom: c.nom, type: c.type })),
-    transactions: d.transactions.map((t, i) => ({ i, libelle: t.libelle, montant: t.montant })),
+    transactions: d.transactions.map((t, i) => ({ i, date: t.date, libelle: masquerNumeros(t.libelle), montant: centsVersDecimal(t.montant) })),
   });
-  return { systeme, message };
+  return { systeme: SYSTEME, contenu };
 }
 
-/** Valide la réponse brute du modèle et la ramène aux identifiants de transactions et de catégories connus. */
+/** Ramène la réponse aux identifiants connus : indice valide, une fois, catégorie permise. */
 export function interpreterReponse(
-  texte: string,
+  r: z.infer<typeof schemaReponse>,
   d: DemandeCategorisation,
   categories: readonly CategoriePermise[],
 ): { id: string; categorieId: string }[] {
-  let brut: unknown;
-  try {
-    const debut = texte.indexOf("{");
-    const fin = texte.lastIndexOf("}");
-    brut = JSON.parse(debut >= 0 && fin > debut ? texte.slice(debut, fin + 1) : texte);
-  } catch {
-    throw new ReponseIaInvalide("JSON illisible");
-  }
-  const v = schemaReponse.safeParse(brut);
-  if (!v.success) throw new ReponseIaInvalide("schéma");
   const permis = new Set(categories.map((c) => c.id));
   const vus = new Set<number>();
   const sortie: { id: string; categorieId: string }[] = [];
-  for (const r of v.data.resultats) {
-    const t = d.transactions[r.i];
-    if (!t || vus.has(r.i) || !permis.has(r.categorie)) continue; // indice inconnu, doublon, « inconnu » ou catégorie inventée
-    vus.add(r.i);
-    sortie.push({ id: t.id, categorieId: r.categorie });
+  for (const { i, categorie } of r.resultats) {
+    const t = d.transactions[i];
+    if (!t || vus.has(i) || !permis.has(categorie)) continue; // indice inconnu, doublon, « inconnu » ou catégorie inventée
+    vus.add(i);
+    sortie.push({ id: t.id, categorieId: categorie });
   }
   return sortie;
 }
 
-/** Appel au modèle, injecté : le vrai client vit dans src/ia/client.ts, les tests passent un faux. */
-export type AppelModele = (p: { systeme: string; message: string }) => Promise<{ texte: string; jetonsEntree: number; jetonsSortie: number }>;
-
 export async function categoriserAvecIa(appel: AppelModele, categories: readonly CategoriePermise[], d: DemandeCategorisation) {
-  const r = await appel(construireConsigne(categories, d));
-  return { resultats: interpreterReponse(r.texte, d, categories), jetonsEntree: r.jetonsEntree, jetonsSortie: r.jetonsSortie };
+  const r = await appel({ ...construireConsigne(categories, d), schema: schemaReponse, gamme: "rapide", maxJetons: 8000 });
+  return { resultats: interpreterReponse(r.donnees, d, categories), modele: r.modele, jetonsEntree: r.jetonsEntree, jetonsSortie: r.jetonsSortie };
 }
