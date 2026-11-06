@@ -6,6 +6,7 @@ import { estDateISO, libelleDate, libelleMois, moisDe } from "@/domaine/dates";
 import type { CalculProjet } from "@/domaine/projets";
 import { ajouterPoste, ajouterVersement, changerCoutProjet, supprimerPoste, supprimerProjet, supprimerVersement } from "@/donnees/magasin";
 import { T } from "@/textes/fr-CA";
+import { EstimationIa } from "./estimation-ia";
 
 const t = T.projets;
 const COULEUR_STATUT = { ok: "text-ok", atteint: "text-ok", retard: "text-warn", nonfinance: "text-bad", depasse: "text-bad" } as const;
@@ -206,6 +207,7 @@ export function CarteProjet({
               {t.ajouterPoste}
             </button>
           </form>
+          <EstimationIa projet={p} aujourdhui={aujourdhui} devise={devise} />
 
           <form onSubmit={soumettreVersement} noValidate className="mt-4">
             <h4 className="text-sm font-bold">{t.versementTitre}</h4>
