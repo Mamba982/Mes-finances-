@@ -346,7 +346,7 @@ export const T = {
       "L'IA n'est pas configurée sur ce serveur. Le classement par règles fonctionne sans elle ; rien n'est envoyé hors de l'application.",
     activer: "Utiliser l'IA (facultatif)",
     consentement:
-      "En l'activant, ce que tu soumets à l'IA est envoyé à Anthropic, aux États-Unis, à chaque demande : la date, la description et le montant des transactions à classer, les relevés PDF, captures d'écran et reçus que tu choisis de faire lire, et tes questions à l'assistant. Les numéros de compte et de carte sont masqués dans les textes avant l'envoi ; ils ne peuvent pas l'être dans une image. Anthropic n'utilise pas ces données pour entraîner ses modèles. Rien n'est envoyé sans une action de ta part, et tu peux désactiver l'IA à tout moment.",
+      "En l'activant, ce que tu soumets à l'IA est envoyé à Anthropic, aux États-Unis, à chaque demande : la date, la description et le montant des transactions à classer, les relevés PDF, captures d'écran et reçus que tu choisis de faire lire, et tes questions à l'assistant, avec un résumé de tes chiffres (capacité d'épargne, totaux par catégorie, projets, noms et soldes des comptes). Les numéros de compte et de carte sont masqués dans les textes avant l'envoi ; ils ne peuvent pas l'être dans une image. Anthropic n'utilise pas ces données pour entraîner ses modèles. Rien n'est envoyé sans une action de ta part, et tu peux désactiver l'IA à tout moment.",
     enregistre: "Réglage enregistré.",
     classerAvecIa: (n: number) => `Classer ${n} avec l'IA`,
     enCours: "Classement…",
@@ -364,6 +364,24 @@ export const T = {
       connexion: "L'IA n'a pas pu répondre. Réessaie ou classe à la main.",
       session: "Ta session a expiré. Reconnecte-toi.",
     },
+  },
+  assistant: {
+    intro: "Pose une question sur tes finances. L'assistant répond à partir des chiffres calculés par l'application ; il n'en invente aucun.",
+    iaInactive: "L'assistant utilise l'IA. Active-la dans les réglages pour lui poser des questions.",
+    ouvrirReglages: "Ouvrir les réglages",
+    question: "Ta question",
+    exemples: [
+      "Est-ce que je peux tenir toutes mes échéances ?",
+      "Quel projet est le plus à risque ?",
+      "Où est passé mon argent le mois dernier ?",
+    ],
+    demander: "Demander",
+    enCours: "L'assistant réfléchit…",
+    questionCourte: "Écris une question d'au moins quelques mots.",
+    questionLongue: (n: number) => `Ta question dépasse ${n} caractères. Raccourcis-la.`,
+    reponse: "Réponse",
+    avertissement: "Réponse de l'IA à partir de tes chiffres. Information générale, pas un conseil financier : vérifie avant de décider.",
+    envoye: "Envoyé à l'IA : ta question et le résumé de tes chiffres, sans tes transactions une par une.",
   },
   affaires: {
     factures: "Factures",
@@ -604,7 +622,7 @@ export const T = {
     projets: "Aucun projet. Commence par un fonds d'urgence (3 à 6 mois de dépenses de base) en priorité haute.",
     affaires: "Aucune facture.",
     placements: "Ajoute tes comptes (CELI, REER, épargne, cartes de crédit) pour suivre ton avoir net.",
-    assistant: "L'assistant lit seulement les données de l'application. S'il ne trouve pas l'information, il le dit.",
+    assistant: "L'assistant répond à partir des chiffres de l'application. Il a besoin de l'IA, désactivée sur ce serveur.",
     infoGenerale:
       "L'application ne garde pas ton argent et ne passe aucun ordre de bourse. Elle compare des types de comptes et calcule l'effet des frais. C'est de l'information générale, pas un conseil de placement personnalisé.",
   },
