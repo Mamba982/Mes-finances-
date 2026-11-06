@@ -30,6 +30,16 @@ export interface CategoriePermise {
   id: string;
   nom: string;
   type: "revenu" | "depense" | "epargne";
+  code?: string | null;
+}
+
+/**
+ * Catégories proposées au modèle. « Dépenses d'entreprise » en est exclue : elle rend la dépense
+ * déductible (impôts), une décision qui revient à l'utilisateur (essai réel : RONA y était classée).
+ */
+export const CODES_EXCLUS_IA: readonly string[] = ["affaires"];
+export function categoriesPourIa(categories: readonly CategoriePermise[]): CategoriePermise[] {
+  return categories.filter((c) => !c.code || !CODES_EXCLUS_IA.includes(c.code));
 }
 
 /** Réponse attendue : un objet par transaction, indice dans la liste envoyée et id de catégorie ou « inconnu ». */
@@ -73,7 +83,8 @@ export function interpreterReponse(
   return sortie;
 }
 
-export async function categoriserAvecIa(appel: AppelModele, categories: readonly CategoriePermise[], d: DemandeCategorisation) {
+export async function categoriserAvecIa(appel: AppelModele, toutes: readonly CategoriePermise[], d: DemandeCategorisation) {
+  const categories = categoriesPourIa(toutes);
   const r = await appel({ ...construireConsigne(categories, d), schema: schemaReponse, gamme: "rapide", maxJetons: 8000 });
   return { resultats: interpreterReponse(r.donnees, d, categories), modele: r.modele, jetonsEntree: r.jetonsEntree, jetonsSortie: r.jetonsSortie };
 }

@@ -55,6 +55,16 @@ describe("consigne envoyée au modèle", () => {
 
 const conso = { modele: "claude-haiku-5-5", jetonsEntree: 812, jetonsSortie: 40 };
 
+describe("catégories proposées au modèle", () => {
+  it("« Dépenses d'entreprise » n'est jamais proposée ni acceptée (déductibilité : décision de l'utilisateur)", async () => {
+    const affaires = { id: "33333333-3333-4333-8333-333333333333", nom: "Dépenses d'entreprise", type: "depense" as const, code: "affaires" };
+    const appel = vi.fn().mockResolvedValue({ donnees: { resultats: [{ i: 0, categorie: affaires.id }] }, ...conso });
+    const r = await categoriserAvecIa(appel, [...CATS, affaires], demande);
+    expect(JSON.parse(appel.mock.calls[0]![0].contenu).categories.map((c: { id: string }) => c.id)).not.toContain(affaires.id);
+    expect(r.resultats).toEqual([]);
+  });
+});
+
 describe("réponse du modèle", () => {
   it("retient seulement les catégories permises, une fois par transaction", () => {
     const r = {
